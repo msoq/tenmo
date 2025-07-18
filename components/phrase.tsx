@@ -10,19 +10,19 @@ import {
   useSidebar,
 } from './ui/sidebar';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 export function Phrase({ user }: { user: User | undefined }) {
   const { setOpenMobile } = useSidebar();
-  const { id } = useParams();
+  const pathname = usePathname();
 
   return (
     <SidebarGroup>
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={false}>
-              <Link href="/phrase " onClick={() => setOpenMobile(false)}>
+            <SidebarMenuButton asChild isActive={pathname === '/phrase'}>
+              <Link href="/phrase" onClick={() => setOpenMobile(false)}>
                 <span>Phrases</span>
               </Link>
             </SidebarMenuButton>
