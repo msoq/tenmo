@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: 2.0.0-beta.7
+        version: 2.0.0-beta.7(zod@3.25.68)
       '@ai-sdk/google':
         specifier: 2.0.0-beta.8
         version: 2.0.0-beta.8(zod@3.25.68)
@@ -279,6 +282,12 @@ importers:
 
 packages:
 
+  '@ai-sdk/anthropic@2.0.0-beta.7':
+    resolution: {integrity: sha512-Z4hHKnLgwlwvQ37GntZq2v+lozzIVVqxBWcFpTMI9XtN2Tgv+Re/3IdS63GDR4Vq3D0tbEP4ZCXu5VasdeRs3g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
+
   '@ai-sdk/gateway@1.0.0-beta.3':
     resolution: {integrity: sha512-g49gMSkXy94lYvl5LRh438OR/0JCG6ol0jV+iLot7cy5HLltZlGocEuauETBu4b10mDXOd7XIjTEZoQpYFMYLQ==}
     engines: {node: '>=18'}
@@ -302,6 +311,12 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.49
+
+  '@ai-sdk/provider-utils@3.0.0-beta.4':
+    resolution: {integrity: sha512-6/ldkUlM7qZCe7sUD/YzgR6dRADjp68whGODikuh9L2HJJElKrOetRD3wE6fA0/TYGcG8g3gUVmiXj+dGhYiFA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4
 
   '@ai-sdk/provider@2.0.0-beta.1':
     resolution: {integrity: sha512-Z8SPncMtS3RsoXITmT7NVwrAq6M44dmw0DoUOYJqNNtCu8iMWuxB8Nxsoqpa0uEEy9R1V1ZThJAXTYgjTUxl3w==}
@@ -3963,6 +3978,12 @@ packages:
 
 snapshots:
 
+  '@ai-sdk/anthropic@2.0.0-beta.7(zod@3.25.68)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0-beta.1
+      '@ai-sdk/provider-utils': 3.0.0-beta.4(zod@3.25.68)
+      zod: 3.25.68
+
   '@ai-sdk/gateway@1.0.0-beta.3(zod@3.25.68)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-beta.1
@@ -3982,6 +4003,14 @@ snapshots:
       zod: 3.25.68
 
   '@ai-sdk/provider-utils@3.0.0-beta.2(zod@3.25.68)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0-beta.1
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.3
+      zod: 3.25.68
+      zod-to-json-schema: 3.24.5(zod@3.25.68)
+
+  '@ai-sdk/provider-utils@3.0.0-beta.4(zod@3.25.68)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-beta.1
       '@standard-schema/spec': 1.0.0
