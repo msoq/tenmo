@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { Phrase } from './phrase';
+import { SidebarPhrase } from './sidebar-phrase';
 
 export function AppSidebar({ user }: { user: User | undefined }) {
   const router = useRouter();
@@ -61,7 +61,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarHistory user={user} />
-        <Phrase user={user} />
+        <SidebarPhrase user={user} />
       </SidebarContent>
       <SidebarFooter>{user && <SidebarUserNav user={user} />}</SidebarFooter>
     </Sidebar>
