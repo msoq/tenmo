@@ -1,61 +1,69 @@
-import { generateObject } from 'ai';
-import { myProvider } from '@/lib/ai/providers';
-import { auth } from '@/app/(auth)/auth';
-import { redirect } from 'next/navigation';
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Phrase } from '@/components/phrase';
-import { z } from 'zod';
-import { phrasePrompt, phraseSchema } from '@/lib/ai/prompts/phrase';
+import type { PhraseParams } from '@/components/phrase-settings';
 
-const searchParamsSchema = z.object({
-  from: z
-    .string()
-    .min(1, 'Source language is required')
-    .max(50, 'Source language must be 50 characters or less'),
-  to: z
-    .string()
-    .min(1, 'Target language is required')
-    .max(50, 'Target language must be 50 characters or less'),
-  topic: z
-    .string()
-    .min(1, 'Topic is required')
-    .max(100, 'Topic must be 100 characters or less'),
-  count: z.coerce.number().int().min(1).max(50).default(10),
-  instruction: z
-    .string()
-    .max(500, 'Instruction must be 500 characters or less')
-    .default('None'),
-  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('C1'),
-  phraseLength: z.coerce.number().int().min(1).max(20).default(5),
-});
+const defaultParams: PhraseParams = {
+  from: 'Spanish',
+  to: 'English',
+  topic: 'travel',
+  count: 10,
+  instruction: 'None',
+  level: 'B1',
+  phraseLength: 5,
+};
 
-type PhraseParams = z.infer<typeof searchParamsSchema>;
+export default function Page() {
+  const [params, setParams] = useState<PhraseParams>(defaultParams);
+  const [phrases, setPhrases] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-async function generatePhrases(params: PhraseParams) {
-  const session = await auth();
+  const fetchPhrases = async (phraseParams: PhraseParams) => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-  if (!session?.user) {
-    redirect('/api/auth/guest');
-  }
+      // Call API to generate phrases
+      const response = await fetch('/api/phrase', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(phraseParams),
+      });
 
-  try {
-    const result = await generateObject({
-      model: myProvider.languageModel('chat-model'),
-      schema: phraseSchema,
-      prompt: phrasePrompt(params),
-    });
+      if (!response.ok) {
+        throw new Error('Failed to generate phrases');
+      }
 
-    return result.object.phrases;
-  } catch (error) {
-    console.error('Error generating phrases:', error);
-    return [];
-  }
-}
+      const data = await response.json();
+      setPhrases(data.phrases);
+    } catch (error) {
+      console.error('Error fetching phrases:', error);
+      setError('Failed to generate phrases. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-export default async function Page({
-  searchParams,
-}: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const params = searchParamsSchema.parse(await searchParams);
-  const phrases = await generatePhrases(params);
+  const handleRepeat = () => {
+    fetchPhrases(params);
+  };
 
-  return <Phrase phrases={phrases} />;
+  useEffect(() => {
+    fetchPhrases(params);
+  }, []);
+
+  return (
+    <Phrase
+      phrases={phrases}
+      params={params}
+      onParamsChange={setParams}
+      onRepeat={handleRepeat}
+      isLoading={isLoading}
+      error={error}
+    />
+  );
 }
