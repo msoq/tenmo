@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Phrase } from '@/components/phrase';
+import { PhrasesList } from '@/components/phrases-list';
 import type { PhraseParams } from '@/components/phrase-settings';
 
 const defaultParams: PhraseParams = {
@@ -57,7 +57,7 @@ export default function Page() {
   }, []);
 
   return (
-    <Phrase
+    <PhrasesList
       phrases={phrases}
       params={params}
       onParamsChange={setParams}
