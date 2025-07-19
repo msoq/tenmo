@@ -21,6 +21,17 @@ export interface PhraseParams {
   phraseLength: number;
 }
 
+// TODO: move to a better place
+export interface Phrase {
+  id: string; // Unique identifier for each phrase
+  phrase: string; // Original phrase text
+  userTranslation: string; // User's translation input
+  feedback?: string; // AI feedback on translation
+  isCorrect?: boolean; // Whether translation is correct
+  isLoading?: boolean; // Loading state for individual phrase
+  isSubmitted?: boolean; // Whether user has submitted translation
+}
+
 interface PhraseSettingsProps {
   params: PhraseParams;
   onParamsChange: (params: PhraseParams) => void;
