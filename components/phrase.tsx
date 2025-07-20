@@ -33,13 +33,14 @@ export function Phrase({
   };
 
   const handleSubmit = () => {
-    if (phrase.userTranslation.trim()) {
+    if (phrase.userTranslation.trim() && !phrase.isLoading && !phrase.isSubmitted) {
       onSubmitTranslation(phrase.id);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent form submission or other default behavior
       handleSubmit();
     }
   };
@@ -98,13 +99,13 @@ export function Phrase({
       role={!phrase.isSubmitted && !isExpanded ? 'button' : undefined}
       aria-label={
         !phrase.isSubmitted && !isExpanded
-          ? `Focus to translate: ${phrase.phrase}`
+          ? `Focus to translate: ${phrase.text}`
           : undefined
       }
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <p className="text-lg font-medium">{phrase.phrase}</p>
+          <p className="text-lg font-medium">{phrase.text}</p>
         </div>
         <div className="ml-3">{getStatusIcon()}</div>
       </div>
@@ -119,7 +120,7 @@ export function Phrase({
               value={phrase.userTranslation}
               onChange={(e) => handleTranslationChange(e.target.value)}
               onKeyDown={handleKeyPress}
-              disabled={phrase.isSubmitted}
+              disabled={phrase.isSubmitted || phrase.isLoading}
               className="flex-1"
               onClick={(e) => e.stopPropagation()}
             />
@@ -147,6 +148,24 @@ export function Phrase({
               }`}
             >
               <p className="text-sm">{phrase.feedback}</p>
+
+              {/* Suggestions for incorrect translations */}
+              {!phrase.isCorrect &&
+                phrase.suggestions &&
+                phrase.suggestions.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-red-300">
+                    <p className="text-xs font-medium mb-1">Suggestions:</p>
+                    <ul className="text-xs space-y-1">
+                      {phrase.suggestions.map((suggestion, index) => (
+                        // biome-ignore lint/suspicious/noArrayIndexKey: accepted
+                        <li key={index} className="flex items-start">
+                          <span className="mr-1">•</span>
+                          <span>{suggestion}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
             </div>
           )}
         </div>

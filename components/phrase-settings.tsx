@@ -24,12 +24,30 @@ export interface PhraseParams {
 // TODO: move to a better place
 export interface Phrase {
   id: string; // Unique identifier for each phrase
-  phrase: string; // Original phrase text
+  text: string; // Original phrase text
   userTranslation: string; // User's translation input
   feedback?: string; // AI feedback on translation
   isCorrect?: boolean; // Whether translation is correct
   isLoading?: boolean; // Loading state for individual phrase
   isSubmitted?: boolean; // Whether user has submitted translation
+  suggestions?: string[]; // Alternative translation suggestions when incorrect
+}
+
+// API request/response interfaces for feedback endpoint
+export interface FeedbackRequest {
+  id: string;
+  text: string;
+  userTranslation: string;
+  from: string;
+  to: string;
+  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+}
+
+export interface FeedbackResponse {
+  id: string;
+  feedback: string;
+  isCorrect: boolean;
+  suggestions?: string[];
 }
 
 interface PhraseSettingsProps {

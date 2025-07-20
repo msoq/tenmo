@@ -1,10 +1,17 @@
 import { useCallback } from 'react';
-import useSWR from 'swr';
-import type { Phrase, PhraseParams } from '@/components/phrase-settings';
+import useSWR, { mutate } from 'swr';
+import useSWRMutation from 'swr/mutation';
+import type {
+  Phrase,
+  PhraseParams,
+  FeedbackRequest,
+  FeedbackResponse,
+} from '@/components/phrase-settings';
 import { generateUUID } from '@/lib/utils';
 
-// Fetcher function for phrase generation
-async function generatePhrases(params: PhraseParams): Promise<Phrase[]> {
+const PHRASES_MUTATION_KEY = 'phrases';
+
+async function generatePhrasesAPI(params: PhraseParams): Promise<Phrase[]> {
   const response = await fetch('/api/phrase', {
     method: 'POST',
     headers: {
@@ -18,105 +25,135 @@ async function generatePhrases(params: PhraseParams): Promise<Phrase[]> {
   }
 
   const data = await response.json();
-  
+
   // Transform API response to Phrase objects with unique IDs
-  return data.phrases.map((phraseText: string) => ({
+  const phrases = data.phrases.map((text: string) => ({
     id: generateUUID(),
-    phrase: phraseText,
+    text,
     userTranslation: '',
     isSubmitted: false,
     isLoading: false,
   }));
+
+  return phrases;
 }
 
-// Mock translation feedback function (will be replaced with real API in Step 3)
-async function submitTranslationFeedback(phrase: Phrase): Promise<{ feedback: string; isCorrect: boolean }> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-  
-  // Mock feedback logic - in reality this will come from AI
-  const isCorrect = Math.random() > 0.3; // 70% chance of being "correct" for demo
-  const feedback = isCorrect 
-    ? `Great job! Your translation "${phrase.userTranslation}" captures the meaning well.`
-    : `Good attempt! Your translation "${phrase.userTranslation}" could be improved. Consider the context and try again.`;
-  
-  return { feedback, isCorrect };
+async function submitTranslationFeedback(
+  phrase: Phrase,
+  params: PhraseParams,
+): Promise<FeedbackResponse> {
+  const requestBody: FeedbackRequest = {
+    id: phrase.id,
+    text: phrase.text,
+    userTranslation: phrase.userTranslation,
+    from: params.from,
+    to: params.to,
+    level: params.level,
+  };
+
+  const response = await fetch('/api/phrase/feedback', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get translation feedback');
+  }
+
+  return response.json();
 }
+
+const setPhraseState =
+  (id: string, key: keyof Phrase, value: any) =>
+  (phrases: Phrase[] = []) =>
+    phrases.map((phrase) =>
+      phrase.id === id ? { ...phrase, [key]: value } : phrase,
+    );
 
 export function usePhrases(params: PhraseParams) {
-  const { data: phrases, error, isLoading, mutate } = useSWR(
-    ['phrases', params],
-    () => generatePhrases(params),
-    {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true,
-      dedupingInterval: 5000, // Don't refetch same params within 5s
-      errorRetryCount: 3,
-    }
+  const { data: phrases = [], error } = useSWR<Phrase[]>(PHRASES_MUTATION_KEY);
+
+  // Mutation for generating phrases
+  const { trigger: triggerGenerate, isMutating: isLoading } = useSWRMutation(
+    PHRASES_MUTATION_KEY,
+    () => generatePhrasesAPI(params),
+    { populateCache: true, revalidate: false },
   );
 
-  // Update translation optimistically
-  const updateTranslation = useCallback((id: string, translation: string) => {
-    if (!phrases) return;
-    
-    const updatedPhrases = phrases.map(phrase => 
-      phrase.id === id 
-        ? { ...phrase, userTranslation: translation }
-        : phrase
-    );
-    
-    // Update cache without revalidation
-    mutate(updatedPhrases, false);
-  }, [phrases, mutate]);
+  const submitFeedbackAndUpdateCache = useCallback(
+    async (phrase: Phrase) => {
+      const { id, feedback, isCorrect, suggestions } =
+        await submitTranslationFeedback(phrase, params);
 
-  // Submit translation with optimistic updates
-  const submitTranslation = useCallback(async (id: string) => {
-    if (!phrases) return;
-    
-    const phrase = phrases.find(p => p.id === id);
-    if (!phrase || !phrase.userTranslation.trim()) return;
+      // Update the phrases cache directly
+      mutate(PHRASES_MUTATION_KEY, (currentPhrases: Phrase[] = []) =>
+        currentPhrases.map((p) => {
+          if (p.id === id) {
+            return {
+              ...p,
+              feedback,
+              isCorrect,
+              suggestions,
+              isSubmitted: true,
+              isLoading: false,
+            };
+          }
+          return p;
+        }),
+      );
+    },
+    [params],
+  );
 
-    // Optimistic update: set loading state
-    const optimisticPhrases = phrases.map(p => 
-      p.id === id 
-        ? { ...p, isSubmitted: true, isLoading: true }
-        : p
-    );
-    mutate(optimisticPhrases, false);
-
+  const generatePhrases = useCallback(async () => {
     try {
-      // Get feedback from API
-      const { feedback, isCorrect } = await submitTranslationFeedback(phrase);
-      
-      // Update with real data
-      const finalPhrases = phrases.map(p => 
-        p.id === id 
-          ? { ...p, isSubmitted: true, isLoading: false, feedback, isCorrect }
-          : p
-      );
-      mutate(finalPhrases, false);
+      return await triggerGenerate();
     } catch (error) {
-      console.error('Error getting translation feedback:', error);
-      
-      // Rollback on error
-      const rolledBackPhrases = phrases.map(p => 
-        p.id === id 
-          ? { ...p, isSubmitted: false, isLoading: false }
-          : p
-      );
-      mutate(rolledBackPhrases, false);
+      console.error('Failed to generate phrases:', error);
+      throw error;
     }
-  }, [phrases, mutate]);
+  }, [triggerGenerate]);
 
-  // Force regenerate phrases
-  const regenerate = useCallback(() => {
-    mutate();
-  }, [mutate]);
+  const updateTranslation = useCallback((id: string, translation: string) => {
+    mutate(
+      PHRASES_MUTATION_KEY,
+      setPhraseState(id, 'userTranslation', translation),
+    );
+  }, []);
+
+  const submitTranslation = useCallback(
+    async (id: string) => {
+      const phrase = phrases.find((p) => p.id === id);
+
+      if (!phrase) {
+        throw new Error('Phrase not found');
+      }
+
+      // optimistically set loading state
+      mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', true));
+
+      try {
+        await submitFeedbackAndUpdateCache(phrase);
+      } catch (error) {
+        // Revert loading state on error
+        mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', false));
+        console.error('Failed to submit translation:', error);
+        throw error;
+      }
+    },
+    [phrases, submitFeedbackAndUpdateCache],
+  );
+
+  const regenerate = useCallback(generatePhrases, [generatePhrases]);
 
   return {
-    phrases: phrases || [],
-    error: error?.message || null,
+    phrases,
+    error,
     isLoading,
+    generatePhrases,
     updateTranslation,
     submitTranslation,
     regenerate,
