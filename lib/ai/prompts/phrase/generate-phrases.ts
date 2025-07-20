@@ -1,14 +1,34 @@
-import { z } from 'zod';
+import { generateObject } from 'ai';
+import { myProvider } from '../../providers';
+import z from 'zod';
 
-export interface PhrasePromptParams {
-  from: string;
-  to: string;
-  topic: string;
-  count: number;
-  instruction: string;
-  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
-  phraseLength: number;
-}
+export const requestBodySchema = z.object({
+  from: z
+    .string()
+    .min(1, 'Source language is required')
+    .max(50, 'Source language must be 50 characters or less'),
+  to: z
+    .string()
+    .min(1, 'Target language is required')
+    .max(50, 'Target language must be 50 characters or less'),
+  topic: z
+    .string()
+    .min(1, 'Topic is required')
+    .max(100, 'Topic must be 100 characters or less'),
+  count: z.coerce.number().int().min(1).max(50).default(10),
+  instruction: z
+    .string()
+    .max(500, 'Instruction must be 500 characters or less')
+    .default('None'),
+  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('B1'),
+  phraseLength: z.coerce.number().int().min(1).max(20).default(5),
+});
+
+const phraseSchema = z.object({
+  phrases: z.array(z.string()),
+});
+
+type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema>;
 
 const cefrDescriptions = {
   A1: 'Beginner - basic phrases, present tense, simple vocabulary, everyday expressions',
@@ -19,11 +39,7 @@ const cefrDescriptions = {
   C2: 'Proficient - near-native complexity, subtle distinctions, advanced discourse, specialized terminology',
 } as const;
 
-export const phraseSchema = z.object({
-  phrases: z.array(z.string()),
-});
-
-export const phrasePrompt = ({
+const generatePhrasesPrompt = ({
   from,
   to,
   topic,
@@ -31,7 +47,7 @@ export const phrasePrompt = ({
   instruction,
   level,
   phraseLength,
-}: PhrasePromptParams): string => {
+}: GeneratePhrasePromptParams): string => {
   const minWords = Math.max(1, Math.round(phraseLength * 0.8));
   const maxWords = Math.round(phraseLength * 1.2);
   const levelDescription = cefrDescriptions[level];
@@ -72,4 +88,14 @@ ${instruction !== 'None' ? `**Special Requirements**: ${instruction}` : `**Focus
 
 Generate the phrases now:
 `;
+};
+
+export const generatePhrases = async (params: GeneratePhrasePromptParams) => {
+  const result = await generateObject({
+    model: myProvider.languageModel('chat-model'),
+    schema: phraseSchema,
+    prompt: generatePhrasesPrompt(params),
+  });
+
+  return result.object.phrases;
 };

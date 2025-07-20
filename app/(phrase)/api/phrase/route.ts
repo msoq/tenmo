@@ -1,32 +1,11 @@
-import { generateObject } from 'ai';
 import { auth } from '@/app/(auth)/auth';
-import { myProvider } from '@/lib/ai/providers';
-import { phrasePrompt, phraseSchema } from '@/lib/ai/prompts/phrase';
 import { z } from 'zod';
+import {
+  generatePhrases,
+  requestBodySchema,
+} from '@/lib/ai/prompts/phrase/generate-phrases';
 
 export const maxDuration = 60;
-
-const requestBodySchema = z.object({
-  from: z
-    .string()
-    .min(1, 'Source language is required')
-    .max(50, 'Source language must be 50 characters or less'),
-  to: z
-    .string()
-    .min(1, 'Target language is required')
-    .max(50, 'Target language must be 50 characters or less'),
-  topic: z
-    .string()
-    .min(1, 'Topic is required')
-    .max(100, 'Topic must be 100 characters or less'),
-  count: z.coerce.number().int().min(1).max(50).default(10),
-  instruction: z
-    .string()
-    .max(500, 'Instruction must be 500 characters or less')
-    .default('None'),
-  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('B1'),
-  phraseLength: z.coerce.number().int().min(1).max(20).default(5),
-});
 
 export async function POST(request: Request) {
   try {
@@ -39,13 +18,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const params = requestBodySchema.parse(body);
 
-    const result = await generateObject({
-      model: myProvider.languageModel('chat-model'),
-      schema: phraseSchema,
-      prompt: phrasePrompt(params),
-    });
+    const phrases = await generatePhrases(params);
 
-    return Response.json({ phrases: result.object.phrases });
+    return Response.json({ phrases });
   } catch (error) {
     console.error('Error generating phrases:', error);
 
