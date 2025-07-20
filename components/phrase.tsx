@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { Phrase as PhraseType } from '@/components/phrase-settings';
-import { CheckCircle, XCircle, Clock, Send } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Send, Loader2 } from 'lucide-react';
 
 interface PhraseProps {
   phrase: PhraseType;
@@ -137,7 +137,11 @@ export function Phrase({
                 disabled={!phrase.userTranslation.trim() || phrase.isLoading}
                 size="sm"
               >
-                <Send className="w-4 h-4" />
+                {phrase.isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
               </Button>
             )}
           </div>
