@@ -55,23 +55,23 @@ Evaluate the student's translation for accuracy.
 
 **IMPORTANT Instructions:**
 - If the translation is CORRECT: Return only isCorrect: true (no feedback or suggestions needed)
-- If the translation is INCORRECT: Provide constructive feedback and suggestions
+- If the translation is INCORRECT: Provide direct, concise feedback without praise or encouragement
 
 **Guidelines for Incorrect Translations:**
-1. **Accuracy Assessment**: Compare the meaning, context, and cultural appropriateness
-2. **CEFR-Appropriate Feedback**: Adjust complexity based on ${params.level} level
-3. **Pedagogical Approach**: Be encouraging while being accurate
-4. **Language-Specific**: Consider grammar rules and cultural context of both languages
+1. **Be Direct**: State what's wrong clearly and concisely
+2. **No Praise**: Avoid phrases like "good attempt", "well done", "keep trying"
+3. **Focus on Errors**: Identify specific grammar, vocabulary, or meaning issues
+4. **CEFR-Appropriate**: Adjust technical language based on ${params.level} level
 
-**Feedback Criteria for Incorrect Translations:**
-- For A1/A2: Focus on basic meaning and simple corrections
-- For B1/B2: Include grammar explanations and context
-- For C1/C2: Provide nuanced feedback on style and cultural appropriateness
+**Feedback Style for Incorrect Translations:**
+- For A1/A2: Simple, direct corrections focusing on basic errors
+- For B1/B2: Clear explanations of grammar or vocabulary mistakes
+- For C1/C2: Precise feedback on nuance, style, or cultural context errors
 
 **Response Format:**
 - isCorrect: true/false based on meaning accuracy
-- feedback: Only provide if translation is incorrect (2-3 sentences explaining the issue)
-- suggestions: Only provide if translation is incorrect (max 3 alternative translations)`;
+- feedback: Only provide if incorrect - direct explanation of the error (1-2 sentences, no praise)
+- suggestions: Only provide if incorrect (max 3 alternative translations)`;
 
 export const generateFeedback = async (params: GenerateFeedbackParams) => {
   const result = await generateObject({
