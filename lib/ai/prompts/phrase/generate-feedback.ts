@@ -26,7 +26,8 @@ export const generateFeedbackBodySchema = z.object({
 const generateFeedbackSchema = z.object({
   feedback: z
     .string()
-    .describe('Detailed pedagogical feedback on the translation'),
+    .optional()
+    .describe('Detailed pedagogical feedback on the translation. Only provide if translation is incorrect.'),
   isCorrect: z.boolean().describe('Whether the translation is correct'),
   suggestions: z
     .array(z.string())
@@ -50,23 +51,27 @@ Original phrase (${params.from}): "${params.text}"
 Student translation (${params.to}): "${params.userTranslation}"
 
 **Your Task:**
-Evaluate the student's translation and provide constructive feedback appropriate for their CEFR level.
+Evaluate the student's translation for accuracy. 
 
-**Guidelines:**
+**IMPORTANT Instructions:**
+- If the translation is CORRECT: Return only isCorrect: true (no feedback or suggestions needed)
+- If the translation is INCORRECT: Provide constructive feedback and suggestions
+
+**Guidelines for Incorrect Translations:**
 1. **Accuracy Assessment**: Compare the meaning, context, and cultural appropriateness
 2. **CEFR-Appropriate Feedback**: Adjust complexity based on ${params.level} level
 3. **Pedagogical Approach**: Be encouraging while being accurate
 4. **Language-Specific**: Consider grammar rules and cultural context of both languages
 
-**Feedback Criteria:**
+**Feedback Criteria for Incorrect Translations:**
 - For A1/A2: Focus on basic meaning and simple corrections
 - For B1/B2: Include grammar explanations and context
 - For C1/C2: Provide nuanced feedback on style and cultural appropriateness
 
 **Response Format:**
-- feedback: Constructive explanation (2-3 sentences)
 - isCorrect: true/false based on meaning accuracy
-- suggestions: Alternative translations if incorrect (max 3)`;
+- feedback: Only provide if translation is incorrect (2-3 sentences explaining the issue)
+- suggestions: Only provide if translation is incorrect (max 3 alternative translations)`;
 
 export const generateFeedback = async (params: GenerateFeedbackParams) => {
   const result = await generateObject({

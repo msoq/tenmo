@@ -33,7 +33,11 @@ export function Phrase({
   };
 
   const handleSubmit = () => {
-    if (phrase.userTranslation.trim() && !phrase.isLoading && !phrase.isSubmitted) {
+    if (
+      phrase.userTranslation.trim() &&
+      !phrase.isLoading &&
+      !phrase.isSubmitted
+    ) {
       onSubmitTranslation(phrase.id);
     }
   };
