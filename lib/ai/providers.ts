@@ -31,24 +31,22 @@ const providers = {
   }),
   google: customProvider({
     languageModels: {
-      'chat-model': google('gemini-2.5-pro'),
+      'chat-model': google('gemini-2.5-flash'),
       'chat-model-reasoning': wrapLanguageModel({
-        model: google('gemini-2.5-pro'),
+        model: google('gemini-2.5-flash'),
         middleware: extractReasoningMiddleware({ tagName: 'think' }),
       }),
-      'title-model': google('gemini-2.5-pro'),
-      'artifact-model': google('gemini-2.5-pro'),
+      'title-model': google('gemini-2.5-flash'),
     },
   }),
   anthropic: customProvider({
     languageModels: {
-      'chat-model': anthropic('claude-3-5-sonnet-20241022'),
+      'chat-model': anthropic('claude-3-5-haiku-latest'),
       'chat-model-reasoning': wrapLanguageModel({
-        model: anthropic('claude-3-5-sonnet-20241022'),
+        model: anthropic('claude-3-5-haiku-latest'),
         middleware: extractReasoningMiddleware({ tagName: 'think' }),
       }),
-      'title-model': anthropic('claude-3-5-haiku-20241022'),
-      'artifact-model': anthropic('claude-3-5-sonnet-20241022'),
+      'title-model': anthropic('claude-3-5-haiku-latest'),
     },
   }),
   test: customProvider({
