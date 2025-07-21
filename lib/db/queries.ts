@@ -27,12 +27,15 @@ import {
   type DBMessage,
   type Chat,
   stream,
+  userPhrasesSettings,
+  type UserPhrasesSettings,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
+import type { PhraseParams } from '@/components/phrase-settings';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -533,6 +536,74 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to get stream ids by chat id',
+    );
+  }
+}
+
+export async function getUserPhrasesSettings(userId: string): Promise<UserPhrasesSettings | null> {
+  try {
+    const settings = await db
+      .select()
+      .from(userPhrasesSettings)
+      .where(eq(userPhrasesSettings.userId, userId))
+      .limit(1);
+    
+    return settings[0] || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get user phrases settings',
+    );
+  }
+}
+
+export async function createUserPhrasesSettings(userId: string, params: PhraseParams): Promise<UserPhrasesSettings> {
+  try {
+    const settings = await db
+      .insert(userPhrasesSettings)
+      .values({
+        userId,
+        fromLanguage: params.from,
+        toLanguage: params.to,
+        topic: params.topic,
+        count: params.count,
+        instruction: params.instruction || null,
+        level: params.level,
+        phraseLength: params.phraseLength,
+      })
+      .returning();
+    
+    return settings[0];
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to create user phrases settings',
+    );
+  }
+}
+
+export async function updateUserPhrasesSettings(userId: string, params: PhraseParams): Promise<UserPhrasesSettings> {
+  try {
+    const settings = await db
+      .update(userPhrasesSettings)
+      .set({
+        fromLanguage: params.from,
+        toLanguage: params.to,
+        topic: params.topic,
+        count: params.count,
+        instruction: params.instruction || null,
+        level: params.level,
+        phraseLength: params.phraseLength,
+        updatedAt: new Date(),
+      })
+      .where(eq(userPhrasesSettings.userId, userId))
+      .returning();
+    
+    return settings[0];
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update user phrases settings',
     );
   }
 }

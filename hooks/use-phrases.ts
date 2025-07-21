@@ -73,18 +73,22 @@ const setPhraseState =
       phrase.id === id ? { ...phrase, [key]: value } : phrase,
     );
 
-export function usePhrases(params: PhraseParams) {
+export function usePhrases(params: PhraseParams | null | undefined) {
   const { data: phrases = [], error } = useSWR<Phrase[]>(PHRASES_MUTATION_KEY);
 
   // Mutation for generating phrases
   const { trigger: triggerGenerate, isMutating: isLoading } = useSWRMutation(
     PHRASES_MUTATION_KEY,
-    () => generatePhrasesAPI(params),
+    () => (params ? generatePhrasesAPI(params) : Promise.resolve([])),
     { populateCache: true, revalidate: false },
   );
 
   const submitFeedbackAndUpdateCache = useCallback(
     async (phrase: Phrase) => {
+      if (!params) {
+        throw new Error('Cannot submit feedback without language settings');
+      }
+
       const { id, feedback, isCorrect, suggestions } =
         await submitTranslationFeedback(phrase, params);
 

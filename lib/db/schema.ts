@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  integer,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -168,3 +170,29 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+export const userPhrasesSettings = pgTable(
+  'UserPhrasesSettings',
+  {
+    id: uuid('id').primaryKey().notNull().defaultRandom(),
+    userId: uuid('userId')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    fromLanguage: varchar('fromLanguage', { length: 50 }).notNull(),
+    toLanguage: varchar('toLanguage', { length: 50 }).notNull(),
+    topic: varchar('topic', { length: 200 }).notNull(),
+    count: integer('count').notNull(),
+    instruction: text('instruction'),
+    level: varchar('level', { 
+      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] 
+    }).notNull(),
+    phraseLength: integer('phraseLength').notNull(),
+    updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+    createdAt: timestamp('createdAt').notNull().defaultNow(),
+  },
+  (table) => ({
+    userIdIndex: uniqueIndex('userPhrasesSettings_userId_unique').on(table.userId),
+  })
+);
+
+export type UserPhrasesSettings = InferSelectModel<typeof userPhrasesSettings>;
