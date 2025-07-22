@@ -14,8 +14,7 @@ import { RefreshCw } from 'lucide-react';
 
 interface PhrasesListProps {
   phrases: PhraseType[];
-  params: PhraseParams;
-  onParamsChange: (params: PhraseParams) => void;
+  params: PhraseParams | null | undefined;
   onRepeat: () => void;
   isLoading?: boolean;
   error?: string | null;
@@ -26,16 +25,23 @@ interface PhrasesListProps {
 export function PhrasesList({
   phrases,
   params,
-  onParamsChange,
   onRepeat,
   isLoading = false,
   error,
   onTranslationChange,
   onSubmitTranslation,
 }: PhrasesListProps) {
+  if (!params) {
+    return (
+      <PhrasesListContainer>
+        <ReadyToPractice />
+      </PhrasesListContainer>
+    );
+  }
+
   if (isLoading) {
     return (
-      <PhrasesListContainer params={params} onParamsChange={onParamsChange}>
+      <PhrasesListContainer>
         <PhrasesLoading />
       </PhrasesListContainer>
     );
@@ -43,19 +49,18 @@ export function PhrasesList({
 
   if (error) {
     return (
-      <PhrasesListContainer params={params} onParamsChange={onParamsChange}>
+      <PhrasesListContainer>
         <PhrasesError error={error} onRepeat={onRepeat} />
       </PhrasesListContainer>
     );
   }
 
   return (
-    <PhrasesListContainer params={params} onParamsChange={onParamsChange}>
+    <PhrasesListContainer>
       <Phrases
         phrases={phrases}
         onRepeat={onRepeat}
         isLoading={isLoading}
-        params={params}
         onTranslationChange={onTranslationChange}
         onSubmitTranslation={onSubmitTranslation}
       />
@@ -65,12 +70,8 @@ export function PhrasesList({
 
 function PhrasesListContainer({
   children,
-  params,
-  onParamsChange,
 }: {
   children: React.ReactNode;
-  params: PhraseParams;
-  onParamsChange: (params: PhraseParams) => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
 
@@ -89,9 +90,7 @@ function PhrasesListContainer({
       </header>
       <main className="flex-1 p-4">
         <div className="max-w-4xl mx-auto space-y-6">
-          {showSettings && (
-            <PhraseSettings params={params} onParamsChange={onParamsChange} />
-          )}
+          {showSettings && <PhraseSettings />}
           {children}
         </div>
       </main>
@@ -123,11 +122,30 @@ function PhrasesError({ error, onRepeat }: Partial<PhrasesListProps>) {
   );
 }
 
+function ReadyToPractice() {
+  return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center space-y-6 max-w-md">
+        <div className="space-y-3">
+          <h2 className="text-3xl font-semibold">Ready to Practice?</h2>
+          <p className="text-muted-foreground text-lg">
+            Set up your language preferences in the settings above to start
+            practicing with personalized phrases.
+          </p>
+        </div>
+        <div className="flex items-center justify-center space-x-2 text-sm text-muted-foreground bg-muted/50 rounded-lg px-4 py-2">
+          <span className="text-base">👆</span>
+          <span>Click the settings icon to configure your preferences</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Phrases({
   phrases,
   onRepeat,
   isLoading,
-  params,
   onTranslationChange,
   onSubmitTranslation,
 }: Partial<PhrasesListProps> & { params?: PhraseParams }) {
@@ -165,7 +183,7 @@ function Phrases({
           </div>
         )}
       </div>
-      {phrases && phrases.length > 0 ? (
+      {phrases && phrases.length > 0 && (
         <div className="grid gap-4">
           {phrases.map((phrase) => (
             <Phrase
@@ -189,17 +207,6 @@ function Phrases({
               Generate New Phrases
             </Button>
           </div>
-        </div>
-      ) : (
-        <div className="text-center py-12 space-y-4">
-          <div className="text-6xl mb-4">📚</div>
-          <h3 className="text-xl font-semibold text-muted-foreground">
-            Ready to Practice?
-          </h3>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Configure your language learning settings above and generate phrases
-            to start practicing translations.
-          </p>
         </div>
       )}
     </div>

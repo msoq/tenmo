@@ -1,18 +1,22 @@
 import { useCallback } from 'react';
-import useSWR from 'swr';
+import useSWR, { useSWRConfig } from 'swr';
 import type { PhraseParams } from '@/components/phrase-settings';
+
+const PHRASE_SETTINGS_API_KEY = '/api/phrase/settings';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export function useUserPhrasesSettings() {
-  const { data: settings, mutate, error, isLoading } = useSWR<PhraseParams | null>(
-    '/api/phrase/settings',
-    fetcher
-  );
+  const { mutate } = useSWRConfig();
+  const {
+    data: settings,
+    error,
+    isLoading,
+  } = useSWR<PhraseParams | null>(PHRASE_SETTINGS_API_KEY, fetcher);
 
   const createSettings = useCallback(
     async (newSettings: PhraseParams): Promise<PhraseParams> => {
-      const response = await fetch('/api/phrase/settings', {
+      const response = await fetch(PHRASE_SETTINGS_API_KEY, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,19 +30,19 @@ export function useUserPhrasesSettings() {
       }
 
       const created = await response.json();
-      mutate(created, false);
+      mutate(PHRASE_SETTINGS_API_KEY, created, false);
       return created;
     },
-    [mutate]
+    [mutate],
   );
 
   const updateSettings = useCallback(
     async (newSettings: PhraseParams): Promise<PhraseParams> => {
       // Optimistic update
-      mutate(newSettings, false);
+      mutate(PHRASE_SETTINGS_API_KEY, newSettings, false);
 
       try {
-        const response = await fetch('/api/phrase/settings', {
+        const response = await fetch(PHRASE_SETTINGS_API_KEY, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -52,15 +56,15 @@ export function useUserPhrasesSettings() {
         }
 
         const updated = await response.json();
-        mutate(updated, false);
+        mutate(PHRASE_SETTINGS_API_KEY, updated, false);
         return updated;
       } catch (error) {
         // Revert optimistic update on error
-        mutate();
+        mutate(PHRASE_SETTINGS_API_KEY);
         throw error;
       }
     },
-    [settings, mutate]
+    [settings, mutate],
   );
 
   const saveSettings = useCallback(
@@ -72,16 +76,13 @@ export function useUserPhrasesSettings() {
         return updateSettings(newSettings);
       }
     },
-    [settings, createSettings, updateSettings]
+    [settings, createSettings, updateSettings],
   );
 
   return {
     settings,
-    createSettings,
-    updateSettings,
     saveSettings,
-    isLoading: isLoading || (!settings && !error),
-    needsSetup: settings === null && !error && !isLoading,
+    isLoading,
     error,
   };
 }

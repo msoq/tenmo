@@ -27,8 +27,8 @@ import {
   type DBMessage,
   type Chat,
   stream,
-  userPhrasesSettings,
   type UserPhrasesSettings,
+  userPhrasesSettings,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -540,14 +540,16 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   }
 }
 
-export async function getUserPhrasesSettings(userId: string): Promise<UserPhrasesSettings | null> {
+export async function getUserPhrasesSettings(
+  userId: string,
+): Promise<UserPhrasesSettings | null> {
   try {
     const settings = await db
       .select()
       .from(userPhrasesSettings)
       .where(eq(userPhrasesSettings.userId, userId))
       .limit(1);
-    
+
     return settings[0] || null;
   } catch (error) {
     throw new ChatSDKError(
@@ -557,7 +559,10 @@ export async function getUserPhrasesSettings(userId: string): Promise<UserPhrase
   }
 }
 
-export async function createUserPhrasesSettings(userId: string, params: PhraseParams): Promise<UserPhrasesSettings> {
+export async function createUserPhrasesSettings(
+  userId: string,
+  params: PhraseParams,
+): Promise<UserPhrasesSettings> {
   try {
     const settings = await db
       .insert(userPhrasesSettings)
@@ -572,7 +577,7 @@ export async function createUserPhrasesSettings(userId: string, params: PhrasePa
         phraseLength: params.phraseLength,
       })
       .returning();
-    
+
     return settings[0];
   } catch (error) {
     throw new ChatSDKError(
@@ -582,7 +587,10 @@ export async function createUserPhrasesSettings(userId: string, params: PhrasePa
   }
 }
 
-export async function updateUserPhrasesSettings(userId: string, params: PhraseParams): Promise<UserPhrasesSettings> {
+export async function updateUserPhrasesSettings(
+  userId: string,
+  params: PhraseParams,
+): Promise<UserPhrasesSettings> {
   try {
     const settings = await db
       .update(userPhrasesSettings)
@@ -598,7 +606,7 @@ export async function updateUserPhrasesSettings(userId: string, params: PhrasePa
       })
       .where(eq(userPhrasesSettings.userId, userId))
       .returning();
-    
+
     return settings[0];
   } catch (error) {
     throw new ChatSDKError(

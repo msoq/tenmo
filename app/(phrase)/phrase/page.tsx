@@ -1,48 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { PhrasesList } from '@/components/phrases-list';
-import type { PhraseParams } from '@/components/phrase-settings';
 import { usePhrases } from '@/hooks/use-phrases';
-
-const defaultParams: PhraseParams = {
-  from: 'Spanish',
-  to: 'English',
-  topic: 'travel',
-  count: 10,
-  instruction: 'None',
-  level: 'B1',
-  phraseLength: 5,
-};
+import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 
 export default function Page() {
-  const [params, setParams] = useState<PhraseParams>(defaultParams);
+  const {
+    settings,
+    isLoading: settingsLoading,
+    error: settingsError,
+  } = useUserPhrasesSettings();
+
   const {
     phrases,
-    error,
-    isLoading,
+    error: phrasesError,
+    isLoading: phrasesLoading,
     generatePhrases,
     updateTranslation,
     submitTranslation,
     regenerate,
-  } = usePhrases(params);
+  } = usePhrases(settings);
 
+  // Generate phrases when settings are loaded
   useEffect(() => {
-    generatePhrases();
-  }, []);
-
-  const handleParamsChange = (value: PhraseParams) => {
-    setParams(value);
-  };
+    if (settings && !settingsLoading) {
+      generatePhrases();
+    }
+  }, [settings, settingsLoading, generatePhrases]);
 
   return (
     <PhrasesList
       phrases={phrases}
-      params={params}
-      onParamsChange={handleParamsChange}
+      params={settings}
       onRepeat={regenerate}
-      isLoading={isLoading}
-      error={error}
+      isLoading={settingsLoading || phrasesLoading}
+      error={settingsError || phrasesError}
       onTranslationChange={updateTranslation}
       onSubmitTranslation={submitTranslation}
     />

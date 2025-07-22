@@ -1,6 +1,9 @@
 'use client';
 
+import { useState, useCallback, useEffect } from 'react';
+import { useDebounce } from '@uidotdev/usehooks';
 import { Input } from '@/components/ui/input';
+import equal from 'fast-deep-equal';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -10,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 
 export interface PhraseParams {
   from: string;
@@ -50,21 +54,48 @@ export interface FeedbackResponse {
   suggestions?: string[];
 }
 
-interface PhraseSettingsProps {
-  params: PhraseParams;
-  onParamsChange: (params: PhraseParams) => void;
-}
+// Default params for when settings don't exist
+const DEFAULT_SETTINGS: PhraseParams = {
+  from: '',
+  to: '',
+  topic: '',
+  count: 10,
+  instruction: '',
+  level: 'A1',
+  phraseLength: 5,
+};
 
-export function PhraseSettings({
-  params,
-  onParamsChange,
-}: PhraseSettingsProps) {
-  const handleInputChange = (
-    field: keyof PhraseParams,
-    value: string | number,
-  ) => {
-    onParamsChange({ ...params, [field]: value });
-  };
+export function PhraseSettings() {
+  const { settings, saveSettings, isLoading } = useUserPhrasesSettings();
+  const [localSettings, setLocalSettings] = useState<PhraseParams | null>(null);
+  const debouncedSettings = useDebounce(localSettings, 1000);
+
+  const handleInputChange = useCallback(
+    (field: keyof PhraseParams, value: string | number) => {
+      if (localSettings) {
+        setLocalSettings({ ...localSettings, [field]: value });
+      }
+    },
+    [localSettings],
+  );
+
+  // initialise localSettings
+  useEffect(() => {
+    if (localSettings) return;
+
+    if (settings) {
+      setLocalSettings(settings);
+    } else if (!isLoading) {
+      setLocalSettings(DEFAULT_SETTINGS);
+    }
+  }, [settings, isLoading]);
+
+  // store settings in db
+  useEffect(() => {
+    if (debouncedSettings && !equal(debouncedSettings, settings)) {
+      saveSettings(debouncedSettings);
+    }
+  }, [debouncedSettings]);
 
   return (
     <Card>
@@ -77,33 +108,30 @@ export function PhraseSettings({
             <Label htmlFor="from">From Language</Label>
             <Input
               id="from"
-              value={params.from}
+              value={localSettings?.from || DEFAULT_SETTINGS.from}
               onChange={(e) => handleInputChange('from', e.target.value)}
-              placeholder="Spanish"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="to">To Language</Label>
             <Input
               id="to"
-              value={params.to}
+              value={localSettings?.to || DEFAULT_SETTINGS.to}
               onChange={(e) => handleInputChange('to', e.target.value)}
-              placeholder="English"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="topic">Topic</Label>
             <Input
               id="topic"
-              value={params.topic}
+              value={localSettings?.topic || DEFAULT_SETTINGS.topic}
               onChange={(e) => handleInputChange('topic', e.target.value)}
-              placeholder="travel"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="level">CEFR Level</Label>
             <Select
-              value={params.level}
+              value={localSettings?.level || DEFAULT_SETTINGS.level}
               onValueChange={(value) => handleInputChange('level', value)}
             >
               <SelectTrigger>
@@ -124,9 +152,9 @@ export function PhraseSettings({
             <Input
               id="count"
               type="number"
-              min="1"
+              min="10"
               max="50"
-              value={params.count}
+              value={localSettings?.count || DEFAULT_SETTINGS.count}
               onChange={(e) =>
                 handleInputChange(
                   'count',
@@ -140,9 +168,11 @@ export function PhraseSettings({
             <Input
               id="phraseLength"
               type="number"
-              min="1"
+              min="5"
               max="20"
-              value={params.phraseLength}
+              value={
+                localSettings?.phraseLength || DEFAULT_SETTINGS.phraseLength
+              }
               onChange={(e) =>
                 handleInputChange(
                   'phraseLength',
@@ -156,7 +186,7 @@ export function PhraseSettings({
           <Label htmlFor="instruction">Additional Instructions</Label>
           <Input
             id="instruction"
-            value={params.instruction}
+            value={localSettings?.instruction || DEFAULT_SETTINGS.instruction}
             onChange={(e) => handleInputChange('instruction', e.target.value)}
             placeholder="Any specific requirements..."
           />
