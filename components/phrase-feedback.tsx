@@ -7,27 +7,32 @@ import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
 
 interface PhraseFeedbackProps {
   phrases: PhraseType[];
+  submittedPhrases: PhraseType[];
+  allCompleted: boolean;
 }
 
-export function PhraseFeedback({ phrases }: PhraseFeedbackProps) {
-  const submittedPhrases = phrases.filter((phrase) => phrase.isSubmitted);
+export function PhraseFeedback({
+  phrases,
+  allCompleted,
+  submittedPhrases,
+}: PhraseFeedbackProps) {
   const loadingPhrase = phrases.find((phrase) => phrase.isLoading);
 
-  if (submittedPhrases.length === 0 && !loadingPhrase) {
+  if (submittedPhrases.length === 0 && !loadingPhrase && !allCompleted) {
     return null;
   }
 
   return (
     <div className="p-4 space-y-2">
       {submittedPhrases.map((phrase) => (
-        <Card 
+        <Card
           key={phrase.id}
           className={
-            phrase.isCorrect === true 
-              ? "bg-green-50 border-green-200" 
-              : phrase.isCorrect === false 
-              ? "bg-red-50 border-red-200" 
-              : ""
+            phrase.isCorrect === true
+              ? 'bg-green-50 border-green-200'
+              : phrase.isCorrect === false
+                ? 'bg-red-50 border-red-200'
+                : ''
           }
         >
           <CardContent className="p-3">
@@ -50,16 +55,19 @@ export function PhraseFeedback({ phrases }: PhraseFeedbackProps) {
                     {phrase.feedback}
                   </div>
                 )}
-                {phrase.isCorrect === false && phrase.suggestions && phrase.suggestions.length > 0 && (
-                  <div className="text-xs text-muted-foreground mt-1">
-                    Suggestions:
-                    <ul className="list-disc list-inside mt-0.5">
-                      {phrase.suggestions.map((suggestion, index) => (
-                        <li key={index}>{suggestion}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {phrase.isCorrect === false &&
+                  phrase.suggestions &&
+                  phrase.suggestions.length > 0 && (
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Suggestions:
+                      <ul className="list-disc list-inside mt-0.5">
+                        {phrase.suggestions.map((suggestion, index) => (
+                          // biome-ignore lint/suspicious/noArrayIndexKey: accepted
+                          <li key={index}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
               </div>
             </div>
           </CardContent>
@@ -86,6 +94,16 @@ export function PhraseFeedback({ phrases }: PhraseFeedbackProps) {
             </CardContent>
           </Card>
         </motion.div>
+      )}
+      {allCompleted && (
+        <div className="p-4 text-center">
+          <p className="text-lg font-medium text-green-600">
+            🎉 All phrases completed!
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Great job! Generate new phrases to continue learning.
+          </p>
+        </div>
       )}
     </div>
   );

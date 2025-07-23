@@ -76,9 +76,16 @@ const setPhraseState =
 
 export function usePhrases(settings: PhraseSettings | null | undefined) {
   const { data: phrases = [], error } = useSWR<Phrase[]>(PHRASES_MUTATION_KEY);
+  const submittedPhrases = phrases.filter((phrase) => phrase.isSubmitted);
+  const allCompleted =
+    phrases.length > 0 && submittedPhrases.length === phrases.length;
 
   // Mutation for generating phrases
-  const { trigger: triggerGenerate, isMutating: isLoading } = useSWRMutation(
+  const {
+    trigger: triggerGenerate,
+    isMutating: isLoading,
+    reset,
+  } = useSWRMutation(
     PHRASES_MUTATION_KEY,
     () => (settings ? generatePhrases(settings) : Promise.resolve([])),
     { populateCache: true, revalidate: false },
@@ -115,12 +122,14 @@ export function usePhrases(settings: PhraseSettings | null | undefined) {
 
   const getPhrases = useCallback(async () => {
     try {
+      mutate(PHRASES_MUTATION_KEY, [], false);
+      reset();
       return await triggerGenerate();
     } catch (error) {
       console.error('Failed to generate phrases:', error);
       throw error;
     }
-  }, [triggerGenerate]);
+  }, [triggerGenerate, reset]);
 
   const submitTranslation = useCallback(
     async (phrase: Phrase, userTranslation: string) => {
@@ -150,6 +159,8 @@ export function usePhrases(settings: PhraseSettings | null | undefined) {
 
   return {
     phrases,
+    submittedPhrases,
+    allCompleted,
     error,
     isLoading,
     getPhrases,

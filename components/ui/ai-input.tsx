@@ -12,7 +12,7 @@ interface AIInputProps {
   placeholder?: string;
   minHeight?: number;
   maxHeight?: number;
-  onSubmit?: (value: string) => void;
+  onSubmit?: (value: string) => boolean;
   className?: string;
   disabled?: boolean;
   isLoading?: boolean;
@@ -36,9 +36,13 @@ export function AIInput({
 
   const handleReset = () => {
     if (!inputValue.trim()) return;
-    onSubmit?.(inputValue);
-    setInputValue('');
-    adjustHeight(true);
+
+    const isSubmitted = onSubmit?.(inputValue);
+
+    if (isSubmitted) {
+      setInputValue('');
+      adjustHeight(true);
+    }
   };
 
   return (

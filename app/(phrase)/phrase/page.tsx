@@ -22,6 +22,8 @@ export default function Page() {
 
   const {
     phrases,
+    allCompleted,
+    submittedPhrases,
     error: phrasesError,
     isLoading: phrasesLoading,
     getPhrases,
@@ -41,15 +43,17 @@ export default function Page() {
 
     if (loadingPhrase) {
       toast.warning('Wait for feedback before submitting the next phrase');
-      return;
+      return false;
     }
 
     if (!phraseToSubmit) {
       toast.warning('Phrase does not exist');
-      return;
+      return false;
     }
 
     submitTranslation(phraseToSubmit, userTranslation);
+
+    return true;
   };
 
   return (
@@ -63,20 +67,25 @@ export default function Page() {
       </header>
       <main className="flex-1 overflow-hidden flex flex-col">
         <div className="overflow-y-auto">
-          <PhraseFeedback phrases={phrases} />
+          <PhraseFeedback
+            phrases={phrases}
+            allCompleted={allCompleted}
+            submittedPhrases={submittedPhrases}
+          />
         </div>
         <div className="mt-auto">
           <Phrase
             phrases={phrases}
             isLoading={settingsLoading || phrasesLoading}
             error={settingsError || phrasesError}
+            onGenerateNewPhrases={getPhrases}
           />
         </div>
       </main>
       <footer>
         <AIInput
           onSubmit={handleSubmit}
-          disabled={settingsLoading || phrasesLoading}
+          disabled={settingsLoading || phrasesLoading || allCompleted}
           className="px-4 pb-10"
           placeholder={
             settingsLoading || phrasesLoading
