@@ -36,60 +36,75 @@ export function PhraseFeedback({
   return (
     <div ref={containerRef} className="p-4 space-y-2">
       {submittedPhrases.map((phrase) => (
-        <Card
+        <motion.div
           key={phrase.id}
-          className={
-            phrase.isCorrect === true
-              ? 'bg-green-50 border-green-200'
-              : phrase.isCorrect === false
-                ? 'bg-red-50 border-red-200'
-                : ''
-          }
+          layout
+          initial={{ opacity: 0, height: 0, y: 0 }}
+          animate={{ opacity: 1, height: 'auto', y: 0 }}
+          transition={{
+            duration: 0.4,
+            layout: { duration: 0.4, ease: 'easeInOut' },
+          }}
         >
-          <CardContent className="p-3">
-            <div className="flex items-start gap-2">
-              {phrase.isCorrect === true && (
-                <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-              )}
-              {phrase.isCorrect === false && (
-                <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-              )}
-              <div className="flex-1">
-                <div className="font-medium">{phrase.text}</div>
-                {phrase.userTranslation && (
-                  <div className="text-sm text-muted-foreground mt-1">
-                    → {phrase.userTranslation}
-                  </div>
+          <Card
+            className={
+              phrase.isCorrect === true
+                ? 'bg-green-50 border-green-200'
+                : phrase.isCorrect === false
+                  ? 'bg-red-50 border-red-200'
+                  : ''
+            }
+          >
+            <CardContent className="p-3">
+              <div className="flex items-start gap-2">
+                {phrase.isCorrect === true && (
+                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                 )}
-                {phrase.isCorrect === false && phrase.feedback && (
-                  <div className="text-xs text-red-600 mt-1">
-                    {phrase.feedback}
-                  </div>
+                {phrase.isCorrect === false && (
+                  <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                 )}
-                {phrase.isCorrect === false &&
-                  phrase.suggestions &&
-                  phrase.suggestions.length > 0 && (
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Suggestions:
-                      <ul className="list-disc list-inside mt-0.5">
-                        {phrase.suggestions.map((suggestion, index) => (
-                          // biome-ignore lint/suspicious/noArrayIndexKey: accepted
-                          <li key={index}>{suggestion}</li>
-                        ))}
-                      </ul>
+                <div className="flex-1">
+                  <div className="font-medium">{phrase.text}</div>
+                  {phrase.userTranslation && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      → {phrase.userTranslation}
                     </div>
                   )}
+                  {phrase.isCorrect === false && phrase.feedback && (
+                    <div className="text-xs text-red-600 mt-1">
+                      {phrase.feedback}
+                    </div>
+                  )}
+                  {phrase.isCorrect === false &&
+                    phrase.suggestions &&
+                    phrase.suggestions.length > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Suggestions:
+                        <ul className="list-disc list-inside mt-0.5">
+                          {phrase.suggestions.map((suggestion, index) => (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: accepted
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </motion.div>
       ))}
       {loadingPhrase && (
         <motion.div
+          key={loadingPhrase.id}
+          layout
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
-          transition={{ delay: 0.2 }}
+          transition={{
+            duration: 0.3,
+            layout: { duration: 0.4, ease: 'easeInOut' },
+          }}
         >
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="p-3">
