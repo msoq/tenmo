@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import type { PhraseParams } from '@/components/phrase-settings';
+import type { PhraseSettings } from '@/components/phrase-settings';
 
 const PHRASE_SETTINGS_API_KEY = '/api/phrase/settings';
 
@@ -12,10 +12,10 @@ export function useUserPhrasesSettings() {
     data: settings,
     error,
     isLoading,
-  } = useSWR<PhraseParams | null>(PHRASE_SETTINGS_API_KEY, fetcher);
+  } = useSWR<PhraseSettings | null>(PHRASE_SETTINGS_API_KEY, fetcher);
 
   const createSettings = useCallback(
-    async (newSettings: PhraseParams): Promise<PhraseParams> => {
+    async (newSettings: PhraseSettings): Promise<PhraseSettings> => {
       const response = await fetch(PHRASE_SETTINGS_API_KEY, {
         method: 'POST',
         headers: {
@@ -37,7 +37,7 @@ export function useUserPhrasesSettings() {
   );
 
   const updateSettings = useCallback(
-    async (newSettings: PhraseParams): Promise<PhraseParams> => {
+    async (newSettings: PhraseSettings): Promise<PhraseSettings> => {
       // Optimistic update
       mutate(PHRASE_SETTINGS_API_KEY, newSettings, false);
 
@@ -68,7 +68,7 @@ export function useUserPhrasesSettings() {
   );
 
   const saveSettings = useCallback(
-    async (newSettings: PhraseParams): Promise<PhraseParams> => {
+    async (newSettings: PhraseSettings): Promise<PhraseSettings> => {
       // Auto-detect whether to create or update
       if (settings === null) {
         return createSettings(newSettings);

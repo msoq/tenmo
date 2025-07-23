@@ -35,7 +35,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import type { PhraseParams } from '@/components/phrase-settings';
+import type { PhraseSettings } from '@/components/phrase-settings';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -561,7 +561,7 @@ export async function getUserPhrasesSettings(
 
 export async function createUserPhrasesSettings(
   userId: string,
-  params: PhraseParams,
+  params: PhraseSettings,
 ): Promise<UserPhrasesSettings> {
   try {
     const settings = await db
@@ -589,7 +589,7 @@ export async function createUserPhrasesSettings(
 
 export async function updateUserPhrasesSettings(
   userId: string,
-  params: PhraseParams,
+  params: PhraseSettings,
 ): Promise<UserPhrasesSettings> {
   try {
     const settings = await db

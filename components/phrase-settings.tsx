@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 
-export interface PhraseParams {
+export interface PhraseSettings {
   from: string;
   to: string;
   topic: string;
@@ -55,7 +55,7 @@ export interface FeedbackResponse {
 }
 
 // Default params for when settings don't exist
-const DEFAULT_SETTINGS: PhraseParams = {
+const DEFAULT_SETTINGS: PhraseSettings = {
   from: '',
   to: '',
   topic: '',
@@ -67,11 +67,13 @@ const DEFAULT_SETTINGS: PhraseParams = {
 
 export function PhraseSettings() {
   const { settings, saveSettings, isLoading } = useUserPhrasesSettings();
-  const [localSettings, setLocalSettings] = useState<PhraseParams | null>(null);
+  const [localSettings, setLocalSettings] = useState<PhraseSettings | null>(
+    null,
+  );
   const debouncedSettings = useDebounce(localSettings, 1000);
 
   const handleInputChange = useCallback(
-    (field: keyof PhraseParams, value: string | number) => {
+    (field: keyof PhraseSettings, value: string | number) => {
       if (localSettings) {
         setLocalSettings({ ...localSettings, [field]: value });
       }

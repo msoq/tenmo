@@ -16,22 +16,20 @@ export default function Page() {
     phrases,
     error: phrasesError,
     isLoading: phrasesLoading,
-    generatePhrases,
+    getPhrases,
     submitTranslation,
   } = usePhrases(settings);
 
-  // Generate phrases when settings are loaded
+  // get phrases when settings are loaded
   useEffect(() => {
     if (settings && !settingsLoading) {
-      generatePhrases();
+      getPhrases();
     }
-  }, [settings, settingsLoading, generatePhrases]);
+  }, [settings, settingsLoading, getPhrases]);
 
   return (
     <PhrasesList
       phrases={phrases}
-      params={settings}
-      onRepeat={generatePhrases}
       isLoading={settingsLoading || phrasesLoading}
       error={settingsError || phrasesError}
       onSubmitTranslation={submitTranslation}

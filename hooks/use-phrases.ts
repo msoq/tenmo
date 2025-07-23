@@ -3,7 +3,7 @@ import useSWR, { mutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import type {
   Phrase,
-  PhraseParams,
+  PhraseSettings,
   FeedbackRequest,
   FeedbackResponse,
 } from '@/components/phrase-settings';
@@ -11,7 +11,7 @@ import { generateUUID } from '@/lib/utils';
 
 const PHRASES_MUTATION_KEY = 'phrases';
 
-async function generatePhrasesAPI(params: PhraseParams): Promise<Phrase[]> {
+async function generatePhrases(params: PhraseSettings): Promise<Phrase[]> {
   const response = await fetch('/api/phrase', {
     method: 'POST',
     headers: {
@@ -40,7 +40,7 @@ async function generatePhrasesAPI(params: PhraseParams): Promise<Phrase[]> {
 
 async function submitTranslationFeedback(
   phrase: Phrase,
-  params: PhraseParams,
+  params: PhraseSettings,
 ): Promise<FeedbackResponse> {
   const requestBody: FeedbackRequest = {
     id: phrase.id,
@@ -73,24 +73,24 @@ const setPhraseState =
       phrase.id === id ? { ...phrase, [key]: value } : phrase,
     );
 
-export function usePhrases(params: PhraseParams | null | undefined) {
+export function usePhrases(settings: PhraseSettings | null | undefined) {
   const { data: phrases = [], error } = useSWR<Phrase[]>(PHRASES_MUTATION_KEY);
 
   // Mutation for generating phrases
   const { trigger: triggerGenerate, isMutating: isLoading } = useSWRMutation(
     PHRASES_MUTATION_KEY,
-    () => (params ? generatePhrasesAPI(params) : Promise.resolve([])),
+    () => (settings ? generatePhrases(settings) : Promise.resolve([])),
     { populateCache: true, revalidate: false },
   );
 
   const submitFeedbackAndUpdateCache = useCallback(
     async (phrase: Phrase) => {
-      if (!params) {
+      if (!settings) {
         throw new Error('Cannot submit feedback without language settings');
       }
 
       const { id, feedback, isCorrect, suggestions } =
-        await submitTranslationFeedback(phrase, params);
+        await submitTranslationFeedback(phrase, settings);
 
       // Update the phrases cache directly
       mutate(PHRASES_MUTATION_KEY, (currentPhrases: Phrase[] = []) =>
@@ -109,10 +109,10 @@ export function usePhrases(params: PhraseParams | null | undefined) {
         }),
       );
     },
-    [params],
+    [settings],
   );
 
-  const generatePhrases = useCallback(async () => {
+  const getPhrases = useCallback(async () => {
     try {
       return await triggerGenerate();
     } catch (error) {
@@ -151,7 +151,7 @@ export function usePhrases(params: PhraseParams | null | undefined) {
     phrases,
     error,
     isLoading,
-    generatePhrases,
+    getPhrases,
     submitTranslation,
   };
 }
