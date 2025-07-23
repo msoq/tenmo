@@ -10,7 +10,9 @@ interface PhraseProps {
 }
 
 export function Phrase({ phrases, isLoading = false, error }: PhraseProps) {
-  const currentPhrase = phrases.find((phrase) => !phrase.isSubmitted);
+  const currentPhrase = phrases.find(
+    (phrase) => !phrase.isSubmitted && !phrase.isLoading,
+  );
 
   if (isLoading) {
     return (

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Phrase } from '@/components/phrase';
+import { PhraseFeedback } from '@/components/phrase-feedback';
 import { PhraseSettingsDialog } from '@/components/phrase-settings-dialog';
 import { PhraseSettingsToggle } from '@/components/phrase-settings-toggle';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -55,6 +56,7 @@ export default function Page() {
         />
       </header>
       <main className="flex-1 overflow-hidden">
+        <PhraseFeedback phrases={phrases} />
         <Phrase
           phrases={phrases}
           isLoading={settingsLoading || phrasesLoading}
