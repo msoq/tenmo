@@ -36,7 +36,13 @@ export default function Page() {
   }, [settings, settingsLoading, getPhrases]);
 
   const handleSubmit = (userTranslation: string) => {
+    const loadingPhrase = phrases.find((phrase) => phrase.isLoading);
     const phraseToSubmit = phrases.find((phrase) => !phrase.isSubmitted);
+
+    if (loadingPhrase) {
+      toast.warning('Wait for feedback before submitting the next phrase');
+      return;
+    }
 
     if (!phraseToSubmit) {
       toast.warning('Phrase does not exist');

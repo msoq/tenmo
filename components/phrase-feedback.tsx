@@ -35,7 +35,7 @@ export function PhraseFeedback({ phrases }: PhraseFeedbackProps) {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 10 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.2 }}
         >
           <Card>
             <CardContent className="p-3">
