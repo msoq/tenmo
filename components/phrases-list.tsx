@@ -1,6 +1,6 @@
 'use client';
 
-import type { Phrase as PhraseType } from '@/components/phrase-settings';
+import type { Phrase as PhraseType } from '@/components/phrase-settings-dialog';
 
 interface PhrasesListProps {
   phrases: PhraseType[];
@@ -17,8 +17,9 @@ export function PhrasesList({
 }: PhrasesListProps) {
   return (
     <div>
-      {phrases.map((phrase) => (
-        <div>{phrase.text}</div>
+      {phrases.map((phrase, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: accepted
+        <div key={index}>{phrase.text}</div>
       ))}
     </div>
   );
