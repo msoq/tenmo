@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { Phrase as PhraseType } from '@/components/phrase-settings-dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { motion } from 'framer-motion';
@@ -17,13 +18,23 @@ export function PhraseFeedback({
   submittedPhrases,
 }: PhraseFeedbackProps) {
   const loadingPhrase = phrases.find((phrase) => phrase.isLoading);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom when new content is added (submitted phrases or loading phrase)
+  useEffect(() => {
+    const scrollContainer = containerRef.current?.parentElement;
+
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  }, [submittedPhrases.length, loadingPhrase?.id]);
 
   if (submittedPhrases.length === 0 && !loadingPhrase && !allCompleted) {
     return null;
   }
 
   return (
-    <div className="p-4 space-y-2">
+    <div ref={containerRef} className="p-4 space-y-2">
       {submittedPhrases.map((phrase) => (
         <Card
           key={phrase.id}
