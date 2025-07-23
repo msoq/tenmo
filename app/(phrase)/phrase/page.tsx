@@ -17,9 +17,7 @@ export default function Page() {
     error: phrasesError,
     isLoading: phrasesLoading,
     generatePhrases,
-    updateTranslation,
     submitTranslation,
-    regenerate,
   } = usePhrases(settings);
 
   // Generate phrases when settings are loaded
@@ -33,10 +31,9 @@ export default function Page() {
     <PhrasesList
       phrases={phrases}
       params={settings}
-      onRepeat={regenerate}
+      onRepeat={generatePhrases}
       isLoading={settingsLoading || phrasesLoading}
       error={settingsError || phrasesError}
-      onTranslationChange={updateTranslation}
       onSubmitTranslation={submitTranslation}
     />
   );

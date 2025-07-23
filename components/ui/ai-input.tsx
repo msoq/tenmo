@@ -1,11 +1,11 @@
 'use client';
 
+import { CornerRightUp, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { Send, Mic } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
-import { cn } from '@/lib/utils';
+import { Button } from './button';
 
 interface AIInputProps {
   id?: string;
@@ -15,8 +15,7 @@ interface AIInputProps {
   onSubmit?: (value: string) => void;
   className?: string;
   disabled?: boolean;
-  value?: string;
-  onChange?: (value: string) => void;
+  isLoading?: boolean;
 }
 
 export function AIInput({
@@ -27,97 +26,82 @@ export function AIInput({
   onSubmit,
   className,
   disabled = false,
-  value: controlledValue,
-  onChange: controlledOnChange,
+  isLoading = false,
 }: AIInputProps) {
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight,
     maxHeight,
   });
-
-  const [internalValue, setInternalValue] = useState('');
-  
-  // Use controlled value if provided, otherwise use internal state
-  const inputValue = controlledValue !== undefined ? controlledValue : internalValue;
-  const setInputValue = controlledOnChange || setInternalValue;
+  const [inputValue, setInputValue] = useState('');
 
   const handleReset = () => {
-    if (!inputValue.trim() || disabled) return;
-
-    if (onSubmit) {
-      onSubmit(inputValue);
-    }
-
-    // Only reset if using internal state (not controlled)
-    if (controlledValue === undefined) {
-      setInputValue('');
-      adjustHeight(true);
-    }
+    if (!inputValue.trim()) return;
+    onSubmit?.(inputValue);
+    adjustHeight(true);
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleReset();
-    }
-  };
-
-  const hasContent = inputValue.trim().length > 0;
 
   return (
-    <div className={cn('relative', className)}>
-      <Textarea
-        id={id}
-        ref={textareaRef}
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={cn(
-          'min-h-[52px] resize-none border rounded-lg px-3 py-3 transition-all duration-200',
-          'focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
-          hasContent ? 'pr-12' : 'pr-10'
-        )}
-        style={{ minHeight: `${minHeight}px` }}
-        rows={1}
-      />
-      
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-        {/* Submit button - appears when typing */}
+    <div className={cn('w-full py-4', className)}>
+      <div className="relative max-w-xl w-full mx-auto">
+        <Textarea
+          id={id}
+          placeholder={placeholder}
+          className={cn(
+            'max-w-xl bg-black/5 dark:bg-white/5 rounded-3xl pl-6 pr-16',
+            'placeholder:text-black/50 dark:placeholder:text-white/50',
+            'border-none ring-black/20 dark:ring-white/20',
+            'text-black dark:text-white text-wrap',
+            'overflow-y-auto resize-none',
+            'focus-visible:ring-0 focus-visible:ring-offset-0',
+            'transition-[height] duration-100 ease-out',
+            'leading-[1.2] py-[16px]',
+            `min-h-[${minHeight}px]`,
+            `max-h-[${maxHeight}px]`,
+            '[&::-webkit-resizer]:hidden', // Скрываем ресайзер
+          )}
+          ref={textareaRef}
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            adjustHeight();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              handleReset();
+            }
+          }}
+          disabled={disabled || isLoading}
+        />
+
+        {/* <div
+          className={cn(
+            'absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200',
+            inputValue ? 'right-10' : 'right-3',
+          )}
+        >
+          <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
+        </div> */}
         <Button
-          type="button"
           onClick={handleReset}
-          disabled={!inputValue.trim() || disabled}
-          size="sm"
-          className={cn(
-            'h-8 w-8 p-0 transition-all duration-200',
-            hasContent 
-              ? 'opacity-100 transform translate-x-0' 
-              : 'opacity-0 transform translate-x-2 pointer-events-none'
-          )}
-        >
-          <Send className="h-4 w-4" />
-        </Button>
-        
-        {/* Microphone icon - always visible when no content */}
-        <Button
           type="button"
-          variant="ghost"
-          size="sm"
+          size="xs"
+          variant="link"
           className={cn(
-            'h-8 w-8 p-0 transition-all duration-200',
-            hasContent 
-              ? 'opacity-0 transform translate-x-2 pointer-events-none' 
-              : 'opacity-100 transform translate-x-0'
+            'absolute top-1/2 -translate-y-1/2 right-3',
+            'rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1',
+            'transition-all duration-200',
+            inputValue
+              ? 'opacity-100 scale-100'
+              : 'opacity-0 scale-95 pointer-events-none',
           )}
-          disabled={disabled}
+          disabled={disabled || isLoading}
         >
-          <Mic className="h-4 w-4" />
+          {isLoading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <CornerRightUp className="w-4 h-4 text-black/70 dark:text-white/70" />
+          )}
         </Button>
       </div>
     </div>

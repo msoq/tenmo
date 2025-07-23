@@ -121,26 +121,22 @@ export function usePhrases(params: PhraseParams | null | undefined) {
     }
   }, [triggerGenerate]);
 
-  const updateTranslation = useCallback((id: string, translation: string) => {
-    mutate(
-      PHRASES_MUTATION_KEY,
-      setPhraseState(id, 'userTranslation', translation),
-    );
-  }, []);
-
   const submitTranslation = useCallback(
-    async (id: string) => {
+    async (id: string, userTranslation: string) => {
       const phrase = phrases.find((p) => p.id === id);
 
       if (!phrase) {
         throw new Error('Phrase not found');
       }
 
-      // optimistically set loading state
       mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', true));
+      mutate(
+        PHRASES_MUTATION_KEY,
+        setPhraseState(id, 'userTranslation', userTranslation),
+      );
 
       try {
-        await submitFeedbackAndUpdateCache(phrase);
+        await submitFeedbackAndUpdateCache({ ...phrase, userTranslation });
       } catch (error) {
         // Revert loading state on error
         mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', false));
@@ -151,15 +147,11 @@ export function usePhrases(params: PhraseParams | null | undefined) {
     [phrases, submitFeedbackAndUpdateCache],
   );
 
-  const regenerate = useCallback(generatePhrases, [generatePhrases]);
-
   return {
     phrases,
     error,
     isLoading,
     generatePhrases,
-    updateTranslation,
     submitTranslation,
-    regenerate,
   };
 }

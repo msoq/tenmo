@@ -18,8 +18,7 @@ interface PhrasesListProps {
   onRepeat: () => void;
   isLoading?: boolean;
   error?: string | null;
-  onTranslationChange?: (id: string, translation: string) => void;
-  onSubmitTranslation?: (id: string) => void;
+  onSubmitTranslation?: (id: string, translation: string) => void;
 }
 
 export function PhrasesList({
@@ -28,7 +27,6 @@ export function PhrasesList({
   onRepeat,
   isLoading = false,
   error,
-  onTranslationChange,
   onSubmitTranslation,
 }: PhrasesListProps) {
   if (!params) {
@@ -61,7 +59,6 @@ export function PhrasesList({
         phrases={phrases}
         onRepeat={onRepeat}
         isLoading={isLoading}
-        onTranslationChange={onTranslationChange}
         onSubmitTranslation={onSubmitTranslation}
       />
     </PhrasesListContainer>
@@ -146,7 +143,6 @@ function Phrases({
   phrases,
   onRepeat,
   isLoading,
-  onTranslationChange,
   onSubmitTranslation,
 }: Partial<PhrasesListProps> & { params?: PhraseParams }) {
   const completedCount = phrases?.filter((p) => p.isSubmitted).length || 0;
@@ -189,7 +185,6 @@ function Phrases({
             <Phrase
               key={phrase.id}
               phrase={phrase}
-              onTranslationChange={onTranslationChange || (() => {})}
               onSubmitTranslation={onSubmitTranslation || (() => {})}
             />
           ))}

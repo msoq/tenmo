@@ -1,51 +1,23 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import type { Phrase as PhraseType } from '@/components/phrase-settings';
-import { CheckCircle, XCircle, Clock, Send, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, Clock } from 'lucide-react';
+import { AIInput } from './ui/ai-input';
 
 interface PhraseProps {
   phrase: PhraseType;
-  onTranslationChange: (id: string, translation: string) => void;
-  onSubmitTranslation: (id: string) => void;
+  onSubmitTranslation: (id: string, translation: string) => void;
 }
 
-export function Phrase({
-  phrase,
-  onTranslationChange,
-  onSubmitTranslation,
-}: PhraseProps) {
+export function Phrase({ phrase, onSubmitTranslation }: PhraseProps) {
   const [isExpanded, setIsExpanded] = useState(
     phrase.userTranslation !== '' || phrase.isSubmitted,
   );
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    if (isExpanded && inputRef.current && !phrase.isSubmitted) {
-      inputRef.current.focus();
-    }
-  }, [isExpanded, phrase.isSubmitted]);
-
-  const handleTranslationChange = (value: string) => {
-    onTranslationChange(phrase.id, value);
-  };
-
-  const handleSubmit = () => {
-    if (
-      phrase.userTranslation.trim() &&
-      !phrase.isLoading &&
-      !phrase.isSubmitted
-    ) {
-      onSubmitTranslation(phrase.id);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent form submission or other default behavior
-      handleSubmit();
+  const handleSubmit = (value: string) => {
+    if (!phrase.isLoading && !phrase.isSubmitted) {
+      onSubmitTranslation(phrase.id, value);
     }
   };
 
@@ -117,33 +89,20 @@ export function Phrase({
       {/* Translation Input Section */}
       {isExpanded && (
         <div className="space-y-3">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            role="textbox"
+            tabIndex={-1}
+          >
+            <AIInput
               id={`translation-${phrase.id}`}
-              value={phrase.userTranslation}
-              onChange={(e) => handleTranslationChange(e.target.value)}
-              onKeyDown={handleKeyPress}
-              disabled={phrase.isSubmitted || phrase.isLoading}
-              className="flex-1"
-              onClick={(e) => e.stopPropagation()}
+              onSubmit={handleSubmit}
+              minHeight={52}
+              maxHeight={120}
+              className="w-full"
+              disabled={phrase.isSubmitted}
+              isLoading={phrase.isLoading}
             />
-            {!phrase.isSubmitted && (
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSubmit();
-                }}
-                disabled={!phrase.userTranslation.trim() || phrase.isLoading}
-                size="sm"
-              >
-                {phrase.isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-              </Button>
-            )}
           </div>
 
           {/* Feedback Section */}
