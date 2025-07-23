@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
 import useSWR, { mutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
-import type {
-  Phrase,
-  PhraseSettings,
-  FeedbackRequest,
-  FeedbackResponse,
-} from '@/components/phrase-settings';
 import { generateUUID } from '@/lib/utils';
+import { toast } from 'sonner';
+import type {
+  PhraseSettings,
+  Phrase,
+  FeedbackResponse,
+  FeedbackRequest,
+} from '@/components/phrase-settings-dialog';
 
 const PHRASES_MUTATION_KEY = 'phrases';
 
@@ -122,26 +123,26 @@ export function usePhrases(settings: PhraseSettings | null | undefined) {
   }, [triggerGenerate]);
 
   const submitTranslation = useCallback(
-    async (id: string, userTranslation: string) => {
-      const phrase = phrases.find((p) => p.id === id);
-
-      if (!phrase) {
-        throw new Error('Phrase not found');
-      }
-
-      mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', true));
+    async (phrase: Phrase, userTranslation: string) => {
       mutate(
         PHRASES_MUTATION_KEY,
-        setPhraseState(id, 'userTranslation', userTranslation),
+        setPhraseState(phrase.id, 'isLoading', true),
+      );
+      mutate(
+        PHRASES_MUTATION_KEY,
+        setPhraseState(phrase.id, 'userTranslation', userTranslation),
       );
 
       try {
         await submitFeedbackAndUpdateCache({ ...phrase, userTranslation });
       } catch (error) {
         // Revert loading state on error
-        mutate(PHRASES_MUTATION_KEY, setPhraseState(id, 'isLoading', false));
-        console.error('Failed to submit translation:', error);
-        throw error;
+        mutate(
+          PHRASES_MUTATION_KEY,
+          setPhraseState(phrase.id, 'isLoading', false),
+        );
+
+        toast.error('Failed to submit translation');
       }
     },
     [phrases, submitFeedbackAndUpdateCache],

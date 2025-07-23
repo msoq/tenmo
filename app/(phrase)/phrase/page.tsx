@@ -8,6 +8,7 @@ import { SidebarToggle } from '@/components/sidebar-toggle';
 import { AIInput } from '@/components/ui/ai-input';
 import { usePhrases } from '@/hooks/use-phrases';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import { toast } from 'sonner';
 
 export default function Page() {
   const [showSettings, setShowSettings] = useState(false);
@@ -33,9 +34,15 @@ export default function Page() {
     }
   }, [settings, settingsLoading, getPhrases]);
 
-  const handleAIInputSubmit = (value: string) => {
-    console.log('AI Input submitted:', value);
-    // Handle AI input submission logic here
+  const handleSubmit = (userTranslation: string) => {
+    const phraseToSubmit = phrases.find((phrase) => !phrase.isSubmitted);
+
+    if (!phraseToSubmit) {
+      toast.warning('Phrase does not exist');
+      return;
+    }
+
+    submitTranslation(phraseToSubmit, userTranslation);
   };
 
   return (
@@ -52,12 +59,11 @@ export default function Page() {
           phrases={phrases}
           isLoading={settingsLoading || phrasesLoading}
           error={settingsError || phrasesError}
-          onSubmitTranslation={submitTranslation}
         />
       </main>
       <footer>
         <AIInput
-          onSubmit={handleAIInputSubmit}
+          onSubmit={handleSubmit}
           disabled={settingsLoading || phrasesLoading}
           className="px-4"
         />

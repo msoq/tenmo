@@ -6,14 +6,12 @@ interface PhrasesListProps {
   phrases: PhraseType[];
   isLoading?: boolean;
   error?: string | null;
-  onSubmitTranslation?: (id: string, translation: string) => void;
 }
 
 export function PhrasesList({
   phrases,
   isLoading = false,
   error,
-  onSubmitTranslation,
 }: PhrasesListProps) {
   return (
     <div>
