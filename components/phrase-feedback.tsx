@@ -18,8 +18,8 @@ export function PhraseFeedback({ phrases }: PhraseFeedbackProps) {
 
   return (
     <div className="p-4 space-y-2">
-      {submittedPhrases.map((phrase, index) => (
-        <Card key={index}>
+      {submittedPhrases.map((phrase) => (
+        <Card key={phrase.id}>
           <CardContent className="p-3">
             <div className="font-medium">{phrase.text}</div>
             {phrase.userTranslation && (

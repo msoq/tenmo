@@ -55,13 +55,17 @@ export default function Page() {
           onToggle={() => setShowSettings(!showSettings)}
         />
       </header>
-      <main className="flex-1 overflow-hidden">
-        <PhraseFeedback phrases={phrases} />
-        <Phrase
-          phrases={phrases}
-          isLoading={settingsLoading || phrasesLoading}
-          error={settingsError || phrasesError}
-        />
+      <main className="flex-1 overflow-hidden flex flex-col">
+        <div className="overflow-y-auto">
+          <PhraseFeedback phrases={phrases} />
+        </div>
+        <div className="mt-auto">
+          <Phrase
+            phrases={phrases}
+            isLoading={settingsLoading || phrasesLoading}
+            error={settingsError || phrasesError}
+          />
+        </div>
       </main>
       <footer>
         <AIInput
