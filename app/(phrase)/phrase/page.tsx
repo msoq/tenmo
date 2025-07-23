@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { PhrasesList } from '@/components/phrases-list';
+import { Phrase } from '@/components/phrase';
 import { PhraseSettingsDialog } from '@/components/phrase-settings-dialog';
 import { PhraseSettingsToggle } from '@/components/phrase-settings-toggle';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -55,7 +55,7 @@ export default function Page() {
         />
       </header>
       <main className="flex-1 overflow-hidden">
-        <PhrasesList
+        <Phrase
           phrases={phrases}
           isLoading={settingsLoading || phrasesLoading}
           error={settingsError || phrasesError}
@@ -65,7 +65,12 @@ export default function Page() {
         <AIInput
           onSubmit={handleSubmit}
           disabled={settingsLoading || phrasesLoading}
-          className="px-4"
+          className="px-4 pb-10"
+          placeholder={
+            settingsLoading || phrasesLoading
+              ? 'Phrase is loading...'
+              : 'Translate the phrase'
+          }
         />
       </footer>
 
