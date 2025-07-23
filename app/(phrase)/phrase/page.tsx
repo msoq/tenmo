@@ -5,12 +5,13 @@ import { PhrasesList } from '@/components/phrases-list';
 import { PhraseSettingsDialog } from '@/components/phrase-settings-dialog';
 import { PhraseSettingsToggle } from '@/components/phrase-settings-toggle';
 import { SidebarToggle } from '@/components/sidebar-toggle';
+import { AIInput } from '@/components/ui/ai-input';
 import { usePhrases } from '@/hooks/use-phrases';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 
 export default function Page() {
   const [showSettings, setShowSettings] = useState(false);
-  
+
   const {
     settings,
     isLoading: settingsLoading,
@@ -32,6 +33,11 @@ export default function Page() {
     }
   }, [settings, settingsLoading, getPhrases]);
 
+  const handleAIInputSubmit = (value: string) => {
+    console.log('AI Input submitted:', value);
+    // Handle AI input submission logic here
+  };
+
   return (
     <div className="flex flex-col min-w-0 h-dvh bg-background">
       <header className="flex sticky top-0 bg-background py-1.5 items-center px-2 md:px-2 gap-2">
@@ -41,7 +47,7 @@ export default function Page() {
           onToggle={() => setShowSettings(!showSettings)}
         />
       </header>
-      <main className="flex-1">
+      <main className="flex-1 overflow-hidden">
         <PhrasesList
           phrases={phrases}
           isLoading={settingsLoading || phrasesLoading}
@@ -49,10 +55,17 @@ export default function Page() {
           onSubmitTranslation={submitTranslation}
         />
       </main>
+      <footer>
+        <AIInput
+          onSubmit={handleAIInputSubmit}
+          disabled={settingsLoading || phrasesLoading}
+          className="px-4"
+        />
+      </footer>
 
-      <PhraseSettingsDialog 
-        open={showSettings} 
-        onOpenChange={setShowSettings} 
+      <PhraseSettingsDialog
+        open={showSettings}
+        onOpenChange={setShowSettings}
       />
     </div>
   );

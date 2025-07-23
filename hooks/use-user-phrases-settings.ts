@@ -1,6 +1,6 @@
+import type { PhraseSettings } from '@/components/phrase-settings-dialog';
 import { useCallback } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
-import type { PhraseSettings } from '@/components/phrase-settings';
 
 const PHRASE_SETTINGS_API_KEY = '/api/phrase/settings';
 

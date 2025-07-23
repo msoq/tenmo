@@ -37,6 +37,7 @@ export function AIInput({
   const handleReset = () => {
     if (!inputValue.trim()) return;
     onSubmit?.(inputValue);
+    setInputValue('');
     adjustHeight(true);
   };
 
