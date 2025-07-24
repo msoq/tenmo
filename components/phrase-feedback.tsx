@@ -4,19 +4,22 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Phrase as PhraseType } from '@/components/phrase-settings-dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, XCircle, Loader2, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PhraseFeedbackProps {
   phrases: PhraseType[];
   submittedPhrases: PhraseType[];
   allCompleted: boolean;
+  onGenerateNewPhrases: () => void;
 }
 
 export function PhraseFeedback({
   phrases,
   allCompleted,
   submittedPhrases,
+  onGenerateNewPhrases,
 }: PhraseFeedbackProps) {
   const loadingPhrase = phrases.find((phrase) => phrase.isLoading);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -151,6 +154,14 @@ export function PhraseFeedback({
             <p className="text-sm text-muted-foreground mt-1">
               Great job! Generate new phrases to continue learning.
             </p>
+            <Button
+              onClick={onGenerateNewPhrases}
+              variant="outline"
+              className="mt-4"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Restart
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>

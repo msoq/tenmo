@@ -86,6 +86,7 @@ export default function Page() {
                 phrases={phrases}
                 allCompleted={allCompleted}
                 submittedPhrases={submittedPhrases}
+                onGenerateNewPhrases={getPhrases}
               />
             </div>
             <div className="mt-auto">
@@ -93,7 +94,6 @@ export default function Page() {
                 phrases={phrases}
                 isLoading={phrasesLoading}
                 error={settingsError || phrasesError}
-                onGenerateNewPhrases={getPhrases}
               />
             </div>
           </>

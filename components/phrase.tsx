@@ -2,22 +2,14 @@
 
 import type { Phrase as PhraseType } from '@/components/phrase-settings-dialog';
 import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { RotateCcw } from 'lucide-react';
 
 interface PhraseProps {
   phrases: PhraseType[];
   isLoading?: boolean;
   error?: string | null;
-  onGenerateNewPhrases?: () => void;
 }
 
-export function Phrase({
-  phrases,
-  isLoading = false,
-  error,
-  onGenerateNewPhrases,
-}: PhraseProps) {
+export function Phrase({ phrases, isLoading = false, error }: PhraseProps) {
   const currentPhrase = phrases.find(
     (phrase) => !phrase.isSubmitted && !phrase.isLoading,
   );
@@ -35,14 +27,7 @@ export function Phrase({
   }
 
   if (!currentPhrase) {
-    return (
-      <div className="p-4 text-center">
-        <Button onClick={onGenerateNewPhrases} variant="outline">
-          <RotateCcw className="w-4 h-4" />
-          Restart
-        </Button>
-      </div>
-    );
+    return null;
   }
 
   return (
