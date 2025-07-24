@@ -35,7 +35,7 @@ import { generateUUID } from '../utils';
 import { generateHashedPassword } from './utils';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import type { PhraseSettings } from '@/components/phrase-settings';
+import type { PhraseSettings } from '@/components/phrase-settings-dialog';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth

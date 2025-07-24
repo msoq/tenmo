@@ -6,13 +6,15 @@ import {
 import { xai } from '@ai-sdk/xai';
 import { google } from '@ai-sdk/google';
 import { anthropic } from '@ai-sdk/anthropic';
+import { openrouter } from '@openrouter/ai-sdk-provider';
 import {
   artifactModel,
   chatModel,
   reasoningModel,
   titleModel,
 } from './models.test';
-import { isTestEnvironment } from '../constants';
+
+const { PROVIDER_NAME } = process.env;
 
 const providers = {
   xai: customProvider({
@@ -41,12 +43,23 @@ const providers = {
   }),
   anthropic: customProvider({
     languageModels: {
-      'chat-model': anthropic('claude-3-5-haiku-latest'),
+      'chat-model': anthropic('claude-3-5-haiku-20241022'),
       'chat-model-reasoning': wrapLanguageModel({
         model: anthropic('claude-3-5-haiku-latest'),
         middleware: extractReasoningMiddleware({ tagName: 'think' }),
       }),
       'title-model': anthropic('claude-3-5-haiku-latest'),
+    },
+  }),
+  // Not available yet
+  openrouter: customProvider({
+    languageModels: {
+      'chat-model': openrouter('google/gemini-2.0-flash-001'),
+      'chat-model-reasoning': wrapLanguageModel({
+        model: openrouter('google/gemini-2.0-flash-001'),
+        middleware: extractReasoningMiddleware({ tagName: 'think' }),
+      }),
+      'title-model': openrouter('google/gemini-2.0-flash-001'),
     },
   }),
   test: customProvider({
@@ -59,4 +72,12 @@ const providers = {
   }),
 };
 
-export const myProvider = isTestEnvironment ? providers.test : providers.google;
+function isProviderName(name: unknown): name is keyof typeof providers {
+  return typeof name === 'string' && name in providers;
+}
+
+if (!isProviderName(PROVIDER_NAME)) {
+  throw new Error(`Unknown provider: ${PROVIDER_NAME}`);
+}
+
+export const myProvider = providers[PROVIDER_NAME];
