@@ -72,13 +72,13 @@ export default function Page() {
             <div className="text-center text-muted-foreground">Loading...</div>
           </div>
         )}
-        
+
         {!settingsLoading && settings === null && (
           <div className="flex-1 flex items-center justify-center">
             <PhraseInitialInstructions />
           </div>
         )}
-        
+
         {!settingsLoading && settings !== null && (
           <>
             <div className="overflow-y-auto">
@@ -99,7 +99,7 @@ export default function Page() {
           </>
         )}
       </main>
-      
+
       {!settingsLoading && settings !== null && (
         <footer>
           <AIInput
