@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Phrase } from '@/components/phrase';
 import { PhraseFeedback } from '@/components/phrase-feedback';
+import { PhraseInitialInstructions } from '@/components/phrase-initial-instructions';
 import { PhraseSettingsDialog } from '@/components/phrase-settings-dialog';
 import { PhraseSettingsToggle } from '@/components/phrase-settings-toggle';
 import { SidebarToggle } from '@/components/sidebar-toggle';
@@ -66,34 +67,51 @@ export default function Page() {
         />
       </header>
       <main className="flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-y-auto">
-          <PhraseFeedback
-            phrases={phrases}
-            allCompleted={allCompleted}
-            submittedPhrases={submittedPhrases}
-          />
-        </div>
-        <div className="mt-auto">
-          <Phrase
-            phrases={phrases}
-            isLoading={settingsLoading || phrasesLoading}
-            error={settingsError || phrasesError}
-            onGenerateNewPhrases={getPhrases}
-          />
-        </div>
+        {settingsLoading && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center text-muted-foreground">Loading...</div>
+          </div>
+        )}
+        
+        {!settingsLoading && settings === null && (
+          <div className="flex-1 flex items-center justify-center">
+            <PhraseInitialInstructions />
+          </div>
+        )}
+        
+        {!settingsLoading && settings !== null && (
+          <>
+            <div className="overflow-y-auto">
+              <PhraseFeedback
+                phrases={phrases}
+                allCompleted={allCompleted}
+                submittedPhrases={submittedPhrases}
+              />
+            </div>
+            <div className="mt-auto">
+              <Phrase
+                phrases={phrases}
+                isLoading={phrasesLoading}
+                error={settingsError || phrasesError}
+                onGenerateNewPhrases={getPhrases}
+              />
+            </div>
+          </>
+        )}
       </main>
-      <footer>
-        <AIInput
-          onSubmit={handleSubmit}
-          disabled={settingsLoading || phrasesLoading || allCompleted}
-          className="px-4 pb-10"
-          placeholder={
-            settingsLoading || phrasesLoading
-              ? 'Phrase is loading...'
-              : 'Translate the phrase'
-          }
-        />
-      </footer>
+      
+      {!settingsLoading && settings !== null && (
+        <footer>
+          <AIInput
+            onSubmit={handleSubmit}
+            disabled={phrasesLoading || allCompleted}
+            className="px-4 pb-10"
+            placeholder={
+              phrasesLoading ? 'Phrases are loading...' : 'Translate the phrase'
+            }
+          />
+        </footer>
+      )}
 
       <PhraseSettingsDialog
         open={showSettings}
