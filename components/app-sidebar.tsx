@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { SidebarPhrase } from './sidebar-phrase';
 
@@ -35,9 +36,15 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               }}
               className="flex flex-row gap-3 items-center"
             >
-              <span className="text-lg font-bold px-2 hover:bg-muted rounded-md cursor-pointer">
-                {'I0>'}
-              </span>
+              <div className="px-2 cursor-pointer">
+                <Image
+                  src="/images/logo.png"
+                  alt="Logo"
+                  width={48}
+                  height={48}
+                  className="object-contain transition-all duration-200 hover:brightness-0 hover:saturate-100 hover:[filter:invert(26%)_sepia(89%)_saturate(1583%)_hue-rotate(95deg)_brightness(70%)_contrast(120%)]"
+                />
+              </div>
             </Link>
             <Tooltip>
               <TooltipTrigger asChild>
