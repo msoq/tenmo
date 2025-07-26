@@ -96,11 +96,22 @@ export function PhraseSettingsDialog({
 
   const handleInputChange = useCallback(
     (field: keyof PhraseSettings, value: string | number) => {
-      if (pendingSettings) {
-        setPendingSettings({ ...pendingSettings, [field]: value });
-      }
+      setPendingSettings((prev) => {
+        if (!prev) return prev;
+        return { ...prev, [field]: value };
+      });
     },
-    [pendingSettings],
+    [],
+  );
+
+  const handleFromLanguageChange = useCallback(
+    (value: string) => handleInputChange('from', value),
+    [],
+  );
+
+  const handleToLanguageChange = useCallback(
+    (value: string) => handleInputChange('to', value),
+    [],
   );
 
   // Initialize settings when dialog opens
@@ -145,7 +156,7 @@ export function PhraseSettingsDialog({
               <Label htmlFor="from">Translate From</Label>
               <LanguageSelect
                 value={pendingSettings?.from || DEFAULT_SETTINGS.from}
-                onValueChange={(value) => handleInputChange('from', value)}
+                onValueChange={handleFromLanguageChange}
                 placeholder="Select source language..."
               />
             </div>
@@ -153,7 +164,7 @@ export function PhraseSettingsDialog({
               <Label htmlFor="to">Translate To</Label>
               <LanguageSelect
                 value={pendingSettings?.to || DEFAULT_SETTINGS.to}
-                onValueChange={(value) => handleInputChange('to', value)}
+                onValueChange={handleToLanguageChange}
                 placeholder="Select target language..."
               />
             </div>

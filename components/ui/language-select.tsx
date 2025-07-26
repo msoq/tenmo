@@ -1,9 +1,7 @@
 'use client';
 
-import { useMemo } from 'react';
-import * as React from 'react';
+import { useMemo, memo } from 'react';
 import ISO6391 from 'iso-639-1';
-import { cn } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -14,8 +12,7 @@ import {
 
 interface Language {
   code: string;
-  name: string;
-  nativeName: string;
+  text: string;
 }
 
 interface LanguageSelectProps {
@@ -26,54 +23,46 @@ interface LanguageSelectProps {
   className?: string;
 }
 
-// Get all languages and sort them alphabetically by English name
-const getAllLanguages = (): Language[] => {
-  return ISO6391.getAllCodes()
-    .map((code) => ({
-      code,
-      name: ISO6391.getName(code),
-      nativeName: ISO6391.getNativeName(code),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-};
+// Pre-calculate all languages once
+const ALL_LANGUAGES: Language[] = ISO6391.getAllCodes()
+  .map((code) => {
+    const name = ISO6391.getName(code);
+    const nativeName = ISO6391.getNativeName(code);
 
-export function LanguageSelect({
+    return {
+      code,
+      text: name === nativeName ? name : `${name} (${nativeName})`,
+    };
+  })
+  .sort((a, b) => a.text.localeCompare(b.text));
+
+const PureLanguageSelect = ({
   value,
   onValueChange,
   placeholder = 'Select a language...',
   disabled = false,
   className,
-}: LanguageSelectProps) {
-  const allLanguages = useMemo(() => getAllLanguages(), []);
+}: LanguageSelectProps) => {
+  const text = useMemo(() => {
+    if (!value) return undefined;
 
-  // Get display text for selected language
-  const selectedLanguage = allLanguages.find((lang) => lang.code === value);
-  const displayText = selectedLanguage
-    ? selectedLanguage.name === selectedLanguage.nativeName
-      ? selectedLanguage.name
-      : `${selectedLanguage.name} (${selectedLanguage.nativeName})`
-    : undefined;
+    return ALL_LANGUAGES.find((lang) => lang.code === value)?.text;
+  }, [value]);
 
   return (
-    <Select
-      value={value}
-      onValueChange={onValueChange}
-      disabled={disabled}
-    >
-      <SelectTrigger className={cn(className)}>
-        <SelectValue placeholder={placeholder}>
-          {displayText}
-        </SelectValue>
+    <Select value={value} onValueChange={onValueChange} disabled={disabled}>
+      <SelectTrigger className={className}>
+        <SelectValue placeholder={placeholder}>{text}</SelectValue>
       </SelectTrigger>
       <SelectContent className="max-h-80" position="popper" sideOffset={4}>
-        {allLanguages.map((language) => (
+        {ALL_LANGUAGES.map((language) => (
           <SelectItem key={language.code} value={language.code}>
-            {language.name === language.nativeName
-              ? language.name
-              : `${language.name} (${language.nativeName})`}
+            {language.text}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
-}
+};
+
+export const LanguageSelect = memo(PureLanguageSelect);
