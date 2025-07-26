@@ -21,6 +21,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import {
+  Slider,
+  SliderTrack,
+  SliderFillTrack,
+  SliderThumb,
+} from '@/components/ui/slider';
 
 export interface PhraseSettings {
   from: string;
@@ -133,7 +139,7 @@ export function PhraseSettingsDialog({
           <DialogTitle>Language Learning Settings</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label htmlFor="from">From Language</Label>
               <Input
@@ -178,38 +184,53 @@ export function PhraseSettingsDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="count">Number of Phrases</Label>
-              <Input
+              <div className="flex items-center justify-between mb-6">
+                <Label htmlFor="count">Number of Phrases</Label>
+                <span className="text-sm text-muted-foreground">
+                  {pendingSettings?.count || DEFAULT_SETTINGS.count}
+                </span>
+              </div>
+              <Slider
                 id="count"
-                type="number"
-                min="10"
-                max="50"
+                minValue={10}
+                maxValue={30}
+                step={1}
                 value={pendingSettings?.count || DEFAULT_SETTINGS.count}
-                onChange={(e) =>
-                  handleInputChange(
-                    'count',
-                    Number.parseInt(e.target.value) || 10,
-                  )
+                onChange={(value) =>
+                  handleInputChange('count', value as number)
                 }
-              />
+              >
+                <SliderTrack>
+                  <SliderFillTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="phraseLength">Words per Phrase</Label>
-              <Input
+              <div className="flex items-center justify-between mb-6">
+                <Label htmlFor="phraseLength">Words per Phrase</Label>
+                <span className="text-sm text-muted-foreground">
+                  {pendingSettings?.phraseLength ??
+                    DEFAULT_SETTINGS.phraseLength}
+                </span>
+              </div>
+              <Slider
                 id="phraseLength"
-                type="number"
-                min="5"
-                max="20"
+                minValue={5}
+                maxValue={20}
+                step={1}
                 value={
-                  pendingSettings?.phraseLength || DEFAULT_SETTINGS.phraseLength
+                  pendingSettings?.phraseLength ?? DEFAULT_SETTINGS.phraseLength
                 }
-                onChange={(e) =>
-                  handleInputChange(
-                    'phraseLength',
-                    Number.parseInt(e.target.value) || 5,
-                  )
+                onChange={(value) =>
+                  handleInputChange('phraseLength', value as number)
                 }
-              />
+              >
+                <SliderTrack>
+                  <SliderFillTrack />
+                </SliderTrack>
+                <SliderThumb />
+              </Slider>
             </div>
           </div>
           <div className="space-y-2">
