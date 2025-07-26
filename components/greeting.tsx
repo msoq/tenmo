@@ -1,6 +1,13 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
 
 export const Greeting = () => {
   return (
@@ -17,14 +24,37 @@ export const Greeting = () => {
       >
         Hello there!
       </motion.div>
+
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.6 }}
-        className="text-2xl text-zinc-500"
+        className="text-base text-gray-600 dark:text-gray-400 mt-2"
       >
-        How can I help you today?
+        Welcome to your personalized AI-powered language learning platform
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 10 }}
+        transition={{ delay: 0.7 }}
+        className="mt-8"
+      >
+        <Link href="/phrase">
+          <Card className="hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer w-72">
+            <CardHeader className="p-4">
+              <CardTitle className="text-base">
+                Master grammar through practice
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Personalized AI feedback adapted to your mistakes, skills, and
+                interests
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </Link>
       </motion.div>
     </div>
   );
