@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { LanguageSelect } from '@/components/ui/language-select';
 import {
   Dialog,
   DialogContent,
@@ -141,31 +142,23 @@ export function PhraseSettingsDialog({
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="from">From Language</Label>
-              <Input
-                id="from"
+              <Label htmlFor="from">Translate From</Label>
+              <LanguageSelect
                 value={pendingSettings?.from || DEFAULT_SETTINGS.from}
-                onChange={(e) => handleInputChange('from', e.target.value)}
+                onValueChange={(value) => handleInputChange('from', value)}
+                placeholder="Select source language..."
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="to">To Language</Label>
-              <Input
-                id="to"
+              <Label htmlFor="to">Translate To</Label>
+              <LanguageSelect
                 value={pendingSettings?.to || DEFAULT_SETTINGS.to}
-                onChange={(e) => handleInputChange('to', e.target.value)}
+                onValueChange={(value) => handleInputChange('to', value)}
+                placeholder="Select target language..."
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="topic">Topic</Label>
-              <Input
-                id="topic"
-                value={pendingSettings?.topic || DEFAULT_SETTINGS.topic}
-                onChange={(e) => handleInputChange('topic', e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="level">CEFR Level</Label>
+              <Label htmlFor="level">Level</Label>
               <Select
                 value={pendingSettings?.level || DEFAULT_SETTINGS.level}
                 onValueChange={(value) => handleInputChange('level', value)}
@@ -182,6 +175,14 @@ export function PhraseSettingsDialog({
                   <SelectItem value="C2">C2 - Proficient</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="topic">Topic</Label>
+              <Input
+                id="topic"
+                value={pendingSettings?.topic || DEFAULT_SETTINGS.topic}
+                onChange={(e) => handleInputChange('topic', e.target.value)}
+              />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between mb-6">

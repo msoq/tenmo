@@ -9,8 +9,8 @@ import {
 export const maxDuration = 60;
 
 const phraseSettingsSchema = z.object({
-  from: z.string().min(1, 'Source language is required').max(50),
-  to: z.string().min(1, 'Target language is required').max(50),
+  from: z.string().min(2, 'Source language code is required').max(10),
+  to: z.string().min(2, 'Target language code is required').max(10),
   topic: z.string().min(1, 'Topic is required').max(200),
   count: z.number().int().min(10).max(50),
   instruction: z.string().max(500).optional().default(''),

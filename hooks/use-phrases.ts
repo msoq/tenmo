@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import useSWR, { mutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { generateUUID } from '@/lib/utils';
+import { normalizeLanguageToName } from '@/lib/utils/language-utils';
 import { toast } from 'sonner';
 import type {
   PhraseSettings,
@@ -13,12 +14,19 @@ import type {
 const PHRASES_MUTATION_KEY = 'phrases';
 
 async function generatePhrases(params: PhraseSettings): Promise<Phrase[]> {
+  // Convert language codes to names for API compatibility
+  const apiParams = {
+    ...params,
+    from: normalizeLanguageToName(params.from),
+    to: normalizeLanguageToName(params.to),
+  };
+
   const response = await fetch('/api/phrase', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(params),
+    body: JSON.stringify(apiParams),
   });
 
   if (!response.ok) {
@@ -47,8 +55,8 @@ async function submitTranslationFeedback(
     id: phrase.id,
     text: phrase.text,
     userTranslation: phrase.userTranslation,
-    from: params.from,
-    to: params.to,
+    from: normalizeLanguageToName(params.from),
+    to: normalizeLanguageToName(params.to),
     level: params.level,
   };
 

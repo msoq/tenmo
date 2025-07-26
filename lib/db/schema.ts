@@ -178,8 +178,8 @@ export const userPhrasesSettings = pgTable(
     userId: uuid('userId')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
-    fromLanguage: varchar('fromLanguage', { length: 50 }).notNull(),
-    toLanguage: varchar('toLanguage', { length: 50 }).notNull(),
+    fromLanguage: varchar('fromLanguage', { length: 10 }).notNull(),
+    toLanguage: varchar('toLanguage', { length: 10 }).notNull(),
     topic: varchar('topic', { length: 200 }).notNull(),
     count: integer('count').notNull(),
     instruction: text('instruction'),
