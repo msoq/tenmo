@@ -27,6 +27,13 @@ export function SidebarPhrase({ user }: { user: User | undefined }) {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === '/topics'}>
+              <Link href="/topics" onClick={() => setOpenMobile(false)}>
+                Topics
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
