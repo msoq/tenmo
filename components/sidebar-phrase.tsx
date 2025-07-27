@@ -21,8 +21,8 @@ export function SidebarPhrase({ user }: { user: User | undefined }) {
       <SidebarGroupContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === '/phrase'}>
-              <Link href="/phrase" onClick={() => setOpenMobile(false)}>
+            <SidebarMenuButton asChild isActive={pathname === '/phrases'}>
+              <Link href="/phrases" onClick={() => setOpenMobile(false)}>
                 Phrases
               </Link>
             </SidebarMenuButton>

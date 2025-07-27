@@ -47,7 +47,7 @@ export const Greeting = () => {
           transition={{ delay: 0.7 }}
           className="mt-8"
         >
-          <Link href="/phrase">
+          <Link href="/phrases">
             <Card className="hover:border-gray-300 dark:hover:border-gray-600 transition-colors cursor-pointer w-72">
               <CardHeader className="p-4">
                 <CardTitle className="text-base">

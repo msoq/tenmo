@@ -2,7 +2,7 @@ import type { PhraseSettings } from '@/components/phrase-settings-dialog';
 import { useCallback } from 'react';
 import useSWR, { useSWRConfig } from 'swr';
 
-const PHRASE_SETTINGS_API_KEY = '/api/phrase/settings';
+const PHRASE_SETTINGS_API_KEY = '/api/phrases/settings';
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 

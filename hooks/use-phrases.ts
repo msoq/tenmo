@@ -21,7 +21,7 @@ async function generatePhrases(params: PhraseSettings): Promise<Phrase[]> {
     to: normalizeLanguageToName(params.to),
   };
 
-  const response = await fetch('/api/phrase', {
+  const response = await fetch('/api/phrases', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ async function submitTranslationFeedback(
     level: params.level,
   };
 
-  const response = await fetch('/api/phrase/feedback', {
+  const response = await fetch('/api/phrases/feedback', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

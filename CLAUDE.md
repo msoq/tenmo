@@ -51,7 +51,7 @@ This is a Next.js 15 AI chatbot application built with App Router, using xAI Gro
 - Message parts system for rich content including attachments
 
 **AI Integration:**
-- Default provider: Google Gemini (gemini-2.5-pro) 
+- Default provider: Google Gemini (gemini-2.5-pro)
 - Alternative providers: xAI Grok models (grok-2-vision-1212, grok-3-mini-beta), Anthropic Claude
 - Reasoning model support with `<think>` tag extraction
 - Tool support for weather, document creation/updates, and suggestions
@@ -77,7 +77,7 @@ This is a Next.js 15 AI chatbot application built with App Router, using xAI Gro
 ## Language Learning Feature
 
 **Phrase Generation System:**
-- **Route**: `/phrase` with URL parameters for configuration
+- **Route**: `/phrases` with URL parameters for configuration
 - **CEFR Levels**: Supports A1, A2, B1, B2, C1, C2 proficiency levels
 - **Customizable Parameters**: Source/target languages, topic, phrase count, length, and instructions
 - **Server-Side Generation**: Uses `generateObject` for reliable structured output
@@ -85,16 +85,12 @@ This is a Next.js 15 AI chatbot application built with App Router, using xAI Gro
 
 **URL Parameter Structure:**
 - `from` (required): Source language (e.g., "Spanish")
-- `to` (required): Target language (e.g., "English") 
+- `to` (required): Target language (e.g., "English")
 - `topic` (required): Practice topic (e.g., "travel", "food")
 - `count` (optional): Number of phrases (1-50, default: 10)
 - `level` (optional): CEFR level (A1-C2, default: B1)
 - `phraseLength` (optional): Target words per phrase (1-20, default: 5)
 - `instruction` (optional): Additional requirements
-
-**Example URLs:**
-- `/phrase?from=Spanish&to=English&topic=travel&level=A2&phraseLength=4`
-- `/phrase?from=French&to=German&topic=business&level=C1&count=15`
 
 **Implementation:**
 - **Prompt Engineering**: Located in `lib/ai/prompts/phrase.ts` with CEFR-specific guidance

@@ -17,7 +17,7 @@
 ### 2. **Create Page-Specific Metadata**
 - Add metadata exports to key pages:
   - Chat page (`app/(chat)/page.tsx`) - AI chatbot focused
-  - Phrase learning page (`app/(phrase)/phrase/page.tsx`) - language learning focused
+  - Phrases learning page (`app/(phrases)/phrases/page.tsx`) - language learning focused
   - Individual chat pages (`app/(chat)/chat/[id]/page.tsx`) - dynamic metadata based on chat content
   - Auth pages - focused on user onboarding
 
