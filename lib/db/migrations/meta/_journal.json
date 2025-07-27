@@ -57,6 +57,13 @@
       "when": 1753117647526,
       "tag": "0007_slippery_centennial",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1753617177151,
+      "tag": "0008_tidy_rick_jones",
+      "breakpoints": true
     }
   ]
 }

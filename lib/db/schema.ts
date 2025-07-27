@@ -196,3 +196,20 @@ export const userPhrasesSettings = pgTable(
 );
 
 export type UserPhrasesSettings = InferSelectModel<typeof userPhrasesSettings>;
+
+export const topics = pgTable('Topics', {
+  id: uuid('id').primaryKey().notNull().defaultRandom(),
+  title: varchar('title', { length: 200 }).notNull(),
+  description: text('description').notNull(),
+  level: varchar('level', { 
+    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] 
+  }).notNull(),
+  category: varchar('category', { length: 50 }).notNull(),
+  difficulty: integer('difficulty').notNull(),
+  createdByUserId: uuid('createdByUserId').references(() => user.id),
+  isActive: boolean('isActive').notNull().default(true),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type Topic = InferSelectModel<typeof topics>;
