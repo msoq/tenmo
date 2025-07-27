@@ -1,102 +1,57 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import {
-  Slider as AriaSlider,
-  SliderOutput as AriaSliderOutput,
-  type SliderOutputProps as AriaSliderOutputProps,
-  type SliderProps as AriaSliderProps,
-  SliderStateContext as AriaSliderStateContext,
-  SliderThumb as AriaSliderThumb,
-  type SliderThumbProps as AriaSliderThumbProps,
-  SliderTrack as AriaSliderTrack,
-  type SliderTrackProps as AriaSliderTrackProps,
-  composeRenderProps,
-} from "react-aria-components"
+import * as React from 'react';
+import * as SliderPrimitive from '@radix-ui/react-slider';
 
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
-import { labelVariants } from "@/components/ui/field"
-
-const SliderOutput = ({ className, ...props }: AriaSliderOutputProps) => (
-  <AriaSliderOutput className={cn(labelVariants(), className)} {...props} />
-)
-
-const Slider = ({
-  className,
-  orientation = "horizontal",
-  ...props
-}: AriaSliderProps) => (
-  <AriaSlider
-    className={composeRenderProps(className, (className) =>
-      cn(
-        "relative flex touch-none select-none items-center",
-        {
-          "h-full": orientation === "vertical",
-          "w-full": orientation === "horizontal",
-        },
-        className
-      )
-    )}
-    orientation={orientation}
-    {...props}
-  />
-)
-
-const SliderTrack = ({ className, ...props }: AriaSliderTrackProps) => (
-  <AriaSliderTrack
-    className={composeRenderProps(className, (className, renderProps) =>
-      cn(
-        {
-          "h-2 w-full": renderProps.orientation === "horizontal",
-          "h-full w-2": renderProps.orientation === "vertical",
-        },
-        "relative grow rounded-full bg-secondary",
-        /* Disabled */
-        "data-[disabled]:opacity-50",
-        className
-      )
-    )}
-    {...props}
-  />
-)
-
-const SliderFillTrack = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => {
-  const state = React.useContext(AriaSliderStateContext)
-  if (!state) return null
-  const orientation = state.orientation === "vertical" ? "height" : "width"
-  return (
-    <div
-      style={{ [orientation]: `${state.getThumbPercent(0) * 100}%` }}
-      className={cn(
-        "absolute rounded-full bg-primary",
-        {
-          "h-full": state.orientation === "horizontal",
-          "w-full bottom-0": state.orientation === "vertical",
-        },
-        className
-      )}
-      {...props}
-    />
-  )
+interface SliderProps
+  extends React.ComponentProps<typeof SliderPrimitive.Root> {
+  labelPosition?: 'top' | 'bottom';
+  label?: (value: number | undefined) => React.ReactNode;
 }
 
-const SliderThumb = ({ className }: AriaSliderThumbProps) => (
-  <AriaSliderThumb
-    className={composeRenderProps(className, (className) =>
-      cn(
-        "left-1/2 top-1/2 block size-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors",
-        /* Disabled */
-        "data-[disabled]:pointer-events-none",
-        /* Focus Visible */
-        "data-[focus-visible]:outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-ring data-[focus-visible]:ring-offset-2",
-        className
-      )
-    )}
-  />
-)
+const Slider = React.forwardRef<
+  React.ElementRef<typeof SliderPrimitive.Root>,
+  SliderProps
+>(({ className, label, labelPosition = 'top', ...props }, ref) => {
+  const initialValue = Array.isArray(props.value)
+    ? props.value
+    : [props.min, props.max];
 
-export { Slider, SliderTrack, SliderFillTrack, SliderThumb, SliderOutput }
+  return (
+    <SliderPrimitive.Root
+      ref={ref}
+      className={cn(
+        'relative flex w-full touch-none select-none items-center',
+        className,
+      )}
+      {...props}
+    >
+      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+        <SliderPrimitive.Range className="absolute h-full bg-primary" />
+      </SliderPrimitive.Track>
+      {initialValue.map((value, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: accepted
+        <React.Fragment key={index}>
+          <SliderPrimitive.Thumb className="relative block h-4 w-4 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50">
+            {label && (
+              <span
+                className={cn(
+                  'absolute flex w-full justify-center',
+                  labelPosition === 'top' && '-top-7',
+                  labelPosition === 'bottom' && 'top-4',
+                )}
+              >
+                {label(value)}
+              </span>
+            )}
+          </SliderPrimitive.Thumb>
+        </React.Fragment>
+      ))}
+    </SliderPrimitive.Root>
+  );
+});
+Slider.displayName = 'Slider';
+
+export { Slider };
