@@ -29,6 +29,8 @@ import {
   stream,
   type UserPhrasesSettings,
   userPhrasesSettings,
+  topics,
+  type Topic,
 } from './schema';
 import type { ArtifactKind } from '@/components/artifact';
 import { generateUUID } from '../utils';
@@ -612,6 +614,187 @@ export async function updateUserPhrasesSettings(
     throw new ChatSDKError(
       'bad_request:database',
       'Failed to update user phrases settings',
+    );
+  }
+}
+
+export async function getTopics({
+  limit = 20,
+  level,
+  category,
+  createdByUserId,
+  activeOnly = true,
+}: {
+  limit?: number;
+  level?: string;
+  category?: string;
+  createdByUserId?: string;
+  activeOnly?: boolean;
+} = {}): Promise<Topic[]> {
+  try {
+    const conditions = [];
+    
+    if (activeOnly) {
+      conditions.push(eq(topics.isActive, true));
+    }
+    
+    if (level) {
+      conditions.push(eq(topics.level, level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'));
+    }
+    
+    if (category) {
+      conditions.push(eq(topics.category, category));
+    }
+    
+    if (createdByUserId) {
+      conditions.push(eq(topics.createdByUserId, createdByUserId));
+    }
+    
+    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+    
+    return await db
+      .select()
+      .from(topics)
+      .where(whereCondition)
+      .orderBy(desc(topics.createdAt))
+      .limit(limit);
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get topics',
+    );
+  }
+}
+
+export async function getTopicById({ id }: { id: string }): Promise<Topic | null> {
+  try {
+    const [topic] = await db
+      .select()
+      .from(topics)
+      .where(eq(topics.id, id))
+      .limit(1);
+    
+    return topic || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get topic by id',
+    );
+  }
+}
+
+export async function createTopic({
+  title,
+  description,
+  level,
+  category,
+  difficulty,
+  createdByUserId,
+}: {
+  title: string;
+  description: string;
+  level: string;
+  category: string;
+  difficulty: number;
+  createdByUserId?: string;
+}): Promise<Topic> {
+  try {
+    const [topic] = await db
+      .insert(topics)
+      .values({
+        title,
+        description,
+        level: level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
+        category,
+        difficulty,
+        createdByUserId: createdByUserId || null,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    
+    return topic;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to create topic',
+    );
+  }
+}
+
+export async function updateTopic({
+  id,
+  title,
+  description,
+  level,
+  category,
+  difficulty,
+}: {
+  id: string;
+  title?: string;
+  description?: string;
+  level?: string;
+  category?: string;
+  difficulty?: number;
+}): Promise<Topic | null> {
+  try {
+    const updateData: any = {
+      updatedAt: new Date(),
+    };
+    
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (level !== undefined) updateData.level = level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+    if (category !== undefined) updateData.category = category;
+    if (difficulty !== undefined) updateData.difficulty = difficulty;
+    
+    const [topic] = await db
+      .update(topics)
+      .set(updateData)
+      .where(eq(topics.id, id))
+      .returning();
+    
+    return topic || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to update topic',
+    );
+  }
+}
+
+export async function deleteTopic({ 
+  id, 
+  softDelete = true 
+}: { 
+  id: string; 
+  softDelete?: boolean;
+}): Promise<Topic | null> {
+  try {
+    if (softDelete) {
+      const [topic] = await db
+        .update(topics)
+        .set({ 
+          isActive: false,
+          updatedAt: new Date(),
+        })
+        .where(eq(topics.id, id))
+        .returning();
+      
+      return topic || null;
+    } else {
+      const [topic] = await db
+        .delete(topics)
+        .where(eq(topics.id, id))
+        .returning();
+      
+      return topic || null;
+    }
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to delete topic',
     );
   }
 }
