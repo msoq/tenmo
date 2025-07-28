@@ -572,7 +572,7 @@ export async function createUserPhrasesSettings(
         userId,
         fromLanguage: params.from,
         toLanguage: params.to,
-        topic: params.topic,
+        topic: params.topics.join(','),
         count: params.count,
         instruction: params.instruction || null,
         level: params.level,
@@ -599,7 +599,7 @@ export async function updateUserPhrasesSettings(
       .set({
         fromLanguage: params.from,
         toLanguage: params.to,
-        topic: params.topic,
+        topic: params.topics.join(','),
         count: params.count,
         instruction: params.instruction || null,
         level: params.level,

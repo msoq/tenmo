@@ -72,7 +72,7 @@ export function PhraseFeedback({
                             exit={{ scale: 0, rotate: 90 }}
                             transition={{ duration: 0.2 }}
                           >
-                            <Loader2 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 animate-spin" />
+                            <Loader2 className="size-4 text-blue-500 mt-0.5 shrink-0 animate-spin" />
                           </motion.div>
                         )}
                         {!isLoading && phrase.isCorrect === true && (
@@ -86,7 +86,7 @@ export function PhraseFeedback({
                               stiffness: 500,
                             }}
                           >
-                            <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="size-4 text-green-500 mt-0.5 shrink-0" />
                           </motion.div>
                         )}
                         {!isLoading && phrase.isCorrect === false && (
@@ -100,7 +100,7 @@ export function PhraseFeedback({
                               stiffness: 500,
                             }}
                           >
-                            <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                            <XCircle className="size-4 text-red-500 mt-0.5 shrink-0" />
                           </motion.div>
                         )}
                       </AnimatePresence>
@@ -159,7 +159,7 @@ export function PhraseFeedback({
               variant="outline"
               className="mt-4"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="size-4" />
               Restart
             </Button>
           </motion.div>

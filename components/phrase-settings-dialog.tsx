@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { LanguageSelect } from '@/components/ui/language-select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
   Dialog,
   DialogContent,
@@ -22,12 +23,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import { useTopics } from '@/hooks/use-topics';
 import { Slider } from '@/components/ui/slider';
 
 export interface PhraseSettings {
   from: string;
   to: string;
-  topic: string;
+  topics: string[];
   count: number;
   instruction: string;
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
@@ -67,7 +69,7 @@ export interface FeedbackResponse {
 const DEFAULT_SETTINGS: PhraseSettings = {
   from: '',
   to: '',
-  topic: '',
+  topics: [],
   count: 10,
   instruction: '',
   level: 'A1',
@@ -84,13 +86,14 @@ export function PhraseSettingsDialog({
   onOpenChange,
 }: PhraseSettingsDialogProps) {
   const { settings, saveSettings, isLoading } = useUserPhrasesSettings();
+  const { topics, isLoading: topicsLoading } = useTopics({ activeOnly: true });
   const [pendingSettings, setPendingSettings] = useState<PhraseSettings | null>(
     null,
   );
   const [isSaving, setIsSaving] = useState(false);
 
   const handleInputChange = useCallback(
-    (field: keyof PhraseSettings, value: string | number) => {
+    (field: keyof PhraseSettings, value: string | number | string[]) => {
       setPendingSettings((prev) => {
         if (!prev) return prev;
         return { ...prev, [field]: value };
@@ -101,12 +104,17 @@ export function PhraseSettingsDialog({
 
   const handleFromLanguageChange = useCallback(
     (value: string) => handleInputChange('from', value),
-    [],
+    [handleInputChange],
   );
 
   const handleToLanguageChange = useCallback(
     (value: string) => handleInputChange('to', value),
-    [],
+    [handleInputChange],
+  );
+
+  const handleTopicsChange = useCallback(
+    (value: string[]) => handleInputChange('topics', value),
+    [handleInputChange],
   );
 
   // Initialize settings when dialog opens
@@ -137,7 +145,13 @@ export function PhraseSettingsDialog({
 
   const handleCancel = useCallback(() => {
     onOpenChange(false);
-  }, []);
+  }, [onOpenChange]);
+
+  // Create topic options from real topics data
+  const topicOptions = topics.map((topic) => ({
+    value: topic.title,
+    label: topic.title,
+  }));
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -183,11 +197,13 @@ export function PhraseSettingsDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="topic">Topic</Label>
-              <Input
-                id="topic"
-                value={pendingSettings?.topic || DEFAULT_SETTINGS.topic}
-                onChange={(e) => handleInputChange('topic', e.target.value)}
+              <Label htmlFor="topics">Topics</Label>
+              <MultiSelect
+                options={topicOptions}
+                value={pendingSettings?.topics || DEFAULT_SETTINGS.topics}
+                onValueChange={handleTopicsChange}
+                placeholder="Select topics..."
+                disabled={topicsLoading}
               />
             </div>
             <div className="space-y-10">
@@ -246,7 +262,7 @@ export function PhraseSettingsDialog({
             className="min-w-[125px]"
           >
             {isSaving || !open ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="size-4 animate-spin" />
             ) : (
               'Save Changes'
             )}

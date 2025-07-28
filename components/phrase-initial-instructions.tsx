@@ -9,7 +9,7 @@ export function PhraseInitialInstructions() {
         </h2>
         <p className="text-sm text-muted-foreground max-w-md">
           Start practicing by clicking the settings button{' '}
-          <Settings className="w-4 h-4 inline mx-1" /> in the top-left corner to
+          <Settings className="size-4 inline mx-1" /> in the top-left corner to
           set up your language preferences, topic, and difficulty level.
         </p>
       </div>
