@@ -11,7 +11,7 @@ export const maxDuration = 60;
 const phraseSettingsSchema = z.object({
   from: z.string().min(2, 'Source language code is required').max(10),
   to: z.string().min(2, 'Target language code is required').max(10),
-  topic: z.string().min(1, 'Topic is required').max(200),
+  topics: z.array(z.string().min(1).max(200)).min(1, 'At least one topic is required').max(5, 'Maximum 5 topics allowed'),
   count: z.number().int().min(10).max(50),
   instruction: z.string().max(500).optional().default(''),
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
@@ -37,7 +37,7 @@ export async function GET() {
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topic: settings.topic,
+      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topic: settings.topic,
+      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -133,7 +133,7 @@ export async function PUT(request: Request) {
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topic: settings.topic,
+      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
