@@ -1,5 +1,8 @@
+import Link from 'next/link';
 import type { Topic } from '@/lib/db/schema';
 import { cn } from '@/lib/utils';
+import { LEVEL_COLORS } from '@/lib/constants';
+import { createDifficultyStars } from '@/lib/topics/utils';
 import {
   Card,
   CardContent,
@@ -10,73 +13,47 @@ import {
 
 interface TopicCardProps {
   topic: Topic;
-  onClick: (topic: Topic) => void;
   className?: string;
 }
 
-const levelColors = {
-  A1: 'bg-green-100 text-green-800 border-green-200',
-  A2: 'bg-green-100 text-green-800 border-green-200',
-  B1: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  B2: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  C1: 'bg-red-100 text-red-800 border-red-200',
-  C2: 'bg-red-100 text-red-800 border-red-200',
-} as const;
-
-const difficultyStars = (difficulty: number) => {
-  const stars = [];
-  for (let i = 0; i < 5; i++) {
-    stars.push(
-      <span
-        key={`star-${difficulty}-${i}`}
+export function TopicCard({ topic, className }: TopicCardProps) {
+  return (
+    <Link href={`/topics/${topic.id}`} className={cn('block', className)}>
+      <Card
         className={cn(
-          'text-sm',
-          i < difficulty ? 'text-yellow-400' : 'text-gray-300'
+          'cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] h-full',
         )}
       >
-        ★
-      </span>
-    );
-  }
-  return stars;
-};
-
-export function TopicCard({ topic, onClick, className }: TopicCardProps) {
-  return (
-    <Card
-      className={cn(
-        'cursor-pointer transition-all duration-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98]',
-        className
-      )}
-      onClick={() => onClick(topic)}
-    >
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg leading-tight">{topic.title}</CardTitle>
-          <div className="flex flex-col items-end gap-1">
-            <span
-              className={cn(
-                'inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium',
-                levelColors[topic.level as keyof typeof levelColors]
-              )}
-            >
-              {topic.level}
-            </span>
-            <div className="flex items-center gap-0.5">
-              {difficultyStars(topic.difficulty)}
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-lg leading-tight">
+              {topic.title}
+            </CardTitle>
+            <div className="flex flex-col items-end gap-1">
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-full border px-2 py-1 text-xs font-medium',
+                  LEVEL_COLORS[topic.level as keyof typeof LEVEL_COLORS],
+                )}
+              >
+                {topic.level}
+              </span>
+              <div className="flex items-center gap-0.5">
+                {createDifficultyStars(topic.difficulty, 'sm')}
+              </div>
             </div>
           </div>
-        </div>
-        <CardDescription className="text-sm line-clamp-2">
-          {topic.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="capitalize">{topic.category}</span>
-          <span>Difficulty: {topic.difficulty}/5</span>
-        </div>
-      </CardContent>
-    </Card>
+          <CardDescription className="text-sm line-clamp-2">
+            {topic.description}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="capitalize">{topic.category}</span>
+            <span>Difficulty: {topic.difficulty}/5</span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

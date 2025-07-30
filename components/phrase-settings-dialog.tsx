@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import equal from 'fast-deep-equal';
 import { Label } from '@/components/ui/label';
+import { LEVEL_OPTIONS } from '@/lib/constants';
 import {
   Select,
   SelectContent,
@@ -187,12 +188,11 @@ export function PhraseSettingsDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="A1">A1 - Beginner</SelectItem>
-                  <SelectItem value="A2">A2 - Elementary</SelectItem>
-                  <SelectItem value="B1">B1 - Intermediate</SelectItem>
-                  <SelectItem value="B2">B2 - Upper Intermediate</SelectItem>
-                  <SelectItem value="C1">C1 - Advanced</SelectItem>
-                  <SelectItem value="C2">C2 - Proficient</SelectItem>
+                  {LEVEL_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

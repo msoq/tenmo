@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import type { Topic } from '@/lib/db/schema';
+import { useRouter } from 'next/navigation';
 import { useTopics } from '@/hooks/use-topics';
 import { TopicCard } from '@/components/topic-card';
-import { TopicDialog } from '@/components/topic-dialog';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -12,28 +12,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 
 interface TopicGridProps {
   className?: string;
 }
 
 export function TopicGrid({ className }: TopicGridProps) {
+  const router = useRouter();
   const { topics, isLoading, error } = useTopics({ activeOnly: true });
-  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [difficultySortOrder, setDifficultySortOrder] = useState<string>('none');
 
-  const handleTopicClick = (topic: Topic) => {
-    setSelectedTopic(topic);
-    setIsDialogOpen(true);
-  };
-
-  const handleDialogClose = () => {
-    setIsDialogOpen(false);
-    setSelectedTopic(null);
+  const handleCreateTopic = () => {
+    router.push('/topics/new');
   };
 
   // Get unique categories and levels for filter options
@@ -99,55 +92,62 @@ export function TopicGrid({ className }: TopicGridProps) {
 
   return (
     <>
-      {/* Filter Controls */}
-      <div className="mb-6 flex flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Level:</span>
-          <Select value={levelFilter} onValueChange={setLevelFilter}>
-            <SelectTrigger className="w-32" aria-label="Filter by level">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Levels</SelectItem>
-              {uniqueLevels.map(level => (
-                <SelectItem key={level} value={level}>
-                  {level}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Header with Create Button */}
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Level:</span>
+            <Select value={levelFilter} onValueChange={setLevelFilter}>
+              <SelectTrigger className="w-32" aria-label="Filter by level">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Levels</SelectItem>
+                {uniqueLevels.map(level => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Category:</span>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-40" aria-label="Filter by category">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {uniqueCategories.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Sort by Difficulty:</span>
+            <Select value={difficultySortOrder} onValueChange={setDifficultySortOrder}>
+              <SelectTrigger className="w-36" aria-label="Sort by difficulty">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Default</SelectItem>
+                <SelectItem value="asc">Easiest First</SelectItem>
+                <SelectItem value="desc">Hardest First</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Category:</span>
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-40" aria-label="Filter by category">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {uniqueCategories.map(category => (
-                <SelectItem key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Sort by Difficulty:</span>
-          <Select value={difficultySortOrder} onValueChange={setDifficultySortOrder}>
-            <SelectTrigger className="w-36" aria-label="Sort by difficulty">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Default</SelectItem>
-              <SelectItem value="asc">Easiest First</SelectItem>
-              <SelectItem value="desc">Hardest First</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Button onClick={handleCreateTopic} className="ml-4">
+          <Plus className="size-4 mr-2" />
+          Create Topic
+        </Button>
       </div>
 
       {/* Results Count */}
@@ -170,18 +170,10 @@ export function TopicGrid({ className }: TopicGridProps) {
             <TopicCard
               key={topic.id}
               topic={topic}
-              onClick={handleTopicClick}
             />
           ))}
         </div>
       )}
-
-      <TopicDialog
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        mode="view"
-        topic={selectedTopic || undefined}
-      />
     </>
   );
 }
