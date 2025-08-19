@@ -1,56 +1,66 @@
-<a href="https://chat.vercel.ai/">
-  <img alt="Next.js 14 and App Router-ready AI chatbot." src="app/(chat)/opengraph-image.png">
-  <h1 align="center">Chat SDK</h1>
-</a>
-
 <p align="center">
-    Chat SDK is a free, open-source template built with Next.js and the AI SDK that helps you quickly build powerful chatbot applications.
+  <strong>Tenmo</strong> is a AI-powered language learning platform. Built with Next.js 15 and the AI SDK, it provides an interactive environment for both conversational AI and structured language practice.
 </p>
 
 <p align="center">
-  <a href="https://chat-sdk.dev"><strong>Read Docs</strong></a> ·
-  <a href="#features"><strong>Features</strong></a> ·
-  <a href="#model-providers"><strong>Model Providers</strong></a> ·
-  <a href="#deploy-your-own"><strong>Deploy Your Own</strong></a> ·
-  <a href="#running-locally"><strong>Running locally</strong></a>
+  <strong><a href="https://tenmo.vercel.app/" target="_blank">Try it Live</a></strong>
 </p>
-<br/>
 
-## Features
+---
 
-- [Next.js](https://nextjs.org) App Router
-  - Advanced routing for seamless navigation and performance
-  - React Server Components (RSCs) and Server Actions for server-side rendering and increased performance
-- [AI SDK](https://sdk.vercel.ai/docs)
-  - Unified API for generating text, structured objects, and tool calls with LLMs
-  - Hooks for building dynamic chat and generative user interfaces
-  - Supports xAI (default), OpenAI, Fireworks, and other model providers
-- [shadcn/ui](https://ui.shadcn.com)
-  - Styling with [Tailwind CSS](https://tailwindcss.com)
-  - Component primitives from [Radix UI](https://radix-ui.com) for accessibility and flexibility
-- Data Persistence
-  - [Neon Serverless Postgres](https://vercel.com/marketplace/neon) for saving chat history and user data
-  - [Vercel Blob](https://vercel.com/storage/blob) for efficient file storage
-- [Auth.js](https://authjs.dev)
-  - Simple and secure authentication
+## 🚀 Getting Started
 
-## Model Providers
+### Prerequisites
 
-This template ships with [xAI](https://x.ai) `grok-2-1212` as the default chat model. However, with the [AI SDK](https://sdk.vercel.ai/docs), you can switch LLM providers to [OpenAI](https://openai.com), [Anthropic](https://anthropic.com), [Cohere](https://cohere.com/), and [many more](https://sdk.vercel.ai/providers/ai-sdk-providers) with just a few lines of code.
+- Node.js 18+ and pnpm
+- PostgreSQL database (local or hosted)
+- API keys for your preferred AI providers
 
-## Running locally
+### Installation
 
-You will need to use the environment variables [defined in `.env.example`](.env.example) to run Next.js AI Chatbot. It's recommended you use [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables) for this, but a `.env` file is all that is necessary.
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd tenmo
+   ```
 
-> Note: You should not commit your `.env` file or it will expose secrets that will allow others to control access to your various AI and authentication provider accounts.
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-1. Install Vercel CLI: `npm i -g vercel`
-2. Link local instance with Vercel and GitHub accounts (creates `.vercel` directory): `vercel link`
-3. Download your environment variables: `vercel env pull`
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
 
-```bash
-pnpm install
-pnpm dev
-```
+4. **Set up the database**
+   ```bash
+   pnpm db:migrate
+   ```
 
-Your app template should now be running on [localhost:3000](http://localhost:3000).
+5. **Start the development server**
+   ```bash
+   pnpm dev
+   ```
+
+Your application will be available at [http://localhost:3000](http://localhost:3000).
+
+## 📖 How to Use Tenmo
+
+### Language Learning
+1. **Configure Settings**: Go to `/phrases` and set up your language pair
+2. **Choose Topics**: Select learning topics that interest you (business, travel, culture, etc.)
+3. **Set Difficulty**: Choose your CEFR level (A1-C2) for appropriate content
+4. **Practice**: Translate phrases and receive intelligent feedback
+5. **Track Progress**: Monitor your accuracy and learning streaks
+
+Based on <a href="https://chat.vercel.ai/" target="_blank">chat.vercel.ai<a/>
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+<p align="center">
+  <strong>Built with ❤️ using Next.js, AI SDK, and modern web technologies</strong>
+</p>
