@@ -594,9 +594,9 @@ export async function createUserPhrasesSettings(
 
     const created = settings[0];
 
-    if (params.topics && params.topics.length > 0) {
+    if (params.topicIds && params.topicIds.length > 0) {
       await db.insert(userPhrasesSettingsTopic).values(
-        params.topics.map((topicId) => ({
+        params.topicIds.map((topicId) => ({
           settingsId: created.id,
           topicId,
         })),
@@ -639,7 +639,7 @@ export async function updateUserPhrasesSettings(
         .delete(userPhrasesSettingsTopic)
         .where(eq(userPhrasesSettingsTopic.settingsId, updated.id));
 
-      const uniqueTopicIds = Array.from(new Set(params.topics || []));
+      const uniqueTopicIds = Array.from(new Set(params.topicIds || []));
       if (uniqueTopicIds.length > 0) {
         await tx.insert(userPhrasesSettingsTopic).values(
           uniqueTopicIds.map((topicId) => ({

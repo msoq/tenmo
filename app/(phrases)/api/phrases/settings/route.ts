@@ -1,4 +1,5 @@
 import { auth } from '@/app/(auth)/auth';
+import type { PhraseSettings } from '@/components/phrase-settings-dialog';
 import {
   createUserPhrasesSettings,
   getTopicsByIds,
@@ -12,10 +13,11 @@ export const maxDuration = 60;
 const phraseSettingsSchema = z.object({
   from: z.string().min(2, 'Source language code is required').max(10),
   to: z.string().min(2, 'Target language code is required').max(10),
-  topics: z
+  topicIds: z
     .array(z.string().uuid())
     .min(1, 'At least one topic is required')
-    .max(5, 'Maximum 5 topics allowed'),
+    .max(5, 'Maximum 5 topics allowed')
+    .describe('Array of topic UUIDs to filter phrases'),
   count: z.number().int().min(10).max(50),
   instruction: z.string().max(500).optional().default(''),
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
@@ -41,7 +43,7 @@ export async function GET() {
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: settings.topicIds,
+      topicIds: settings.topicIds,
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -71,7 +73,7 @@ export async function POST(request: Request) {
     const params = phraseSettingsSchema.parse(body);
 
     // Validate topic IDs exist to avoid FK errors
-    const uniqueTopicIds = Array.from(new Set(params.topics));
+    const uniqueTopicIds = Array.from(new Set(params.topicIds));
     const foundTopics = await getTopicsByIds({ ids: uniqueTopicIds });
     if (foundTopics.length !== uniqueTopicIds.length) {
       const foundIds = new Set(foundTopics.map((t) => t.id));
@@ -91,14 +93,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const settings = await createUserPhrasesSettings(session.user.id, params);
+    // Pass normalized params with topicIds for database operation
+    const dbParams: PhraseSettings = {
+      from: params.from,
+      to: params.to,
+      topicIds: params.topicIds, // Database functions now use topicIds
+      count: params.count,
+      instruction: params.instruction || '',
+      level: params.level,
+      phraseLength: params.phraseLength,
+    };
+    const settings = await createUserPhrasesSettings(session.user.id, dbParams);
 
     // Transform database model to API response (read back topicIds)
     const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: reread?.topicIds ?? [],
+      topicIds: reread?.topicIds ?? [], // Use new field name
+      topics: reread?.topicIds ?? [], // Keep for backward compatibility
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -136,7 +149,7 @@ export async function PUT(request: Request) {
     const params = phraseSettingsSchema.parse(body);
 
     // Validate topic IDs exist to avoid FK errors
-    const uniqueTopicIds = Array.from(new Set(params.topics));
+    const uniqueTopicIds = Array.from(new Set(params.topicIds));
     const foundTopics = await getTopicsByIds({ ids: uniqueTopicIds });
     if (foundTopics.length !== uniqueTopicIds.length) {
       const foundIds = new Set(foundTopics.map((t) => t.id));
@@ -156,14 +169,24 @@ export async function PUT(request: Request) {
       );
     }
 
-    const settings = await updateUserPhrasesSettings(session.user.id, params);
+    // Pass normalized params with topicIds for database operation
+    const dbParams: PhraseSettings = {
+      from: params.from,
+      to: params.to,
+      topicIds: params.topicIds,
+      count: params.count,
+      instruction: params.instruction || '',
+      level: params.level,
+      phraseLength: params.phraseLength,
+    };
+    const settings = await updateUserPhrasesSettings(session.user.id, dbParams);
 
     // Transform database model to API response (read back topicIds)
     const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: reread?.topicIds ?? [],
+      topicIds: reread?.topicIds ?? [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,

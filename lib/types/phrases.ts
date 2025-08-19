@@ -11,7 +11,7 @@
 export interface PhraseSettingsDTO {
   from: string;
   to: string;
-  topics: string[]; // Array of topic IDs
+  topicIds: string[];
   count: number;
   instruction: string;
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';

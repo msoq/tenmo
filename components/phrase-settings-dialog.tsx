@@ -30,7 +30,7 @@ import { useCallback, useEffect, useState } from 'react';
 export interface PhraseSettings {
   from: string;
   to: string;
-  topics: string[];
+  topicIds: string[];
   count: number;
   instruction: string;
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
@@ -70,7 +70,7 @@ export interface FeedbackResponse {
 const DEFAULT_SETTINGS: PhraseSettings = {
   from: '',
   to: '',
-  topics: [],
+  topicIds: [],
   count: 10,
   instruction: '',
   level: 'A1',
@@ -114,7 +114,7 @@ export function PhraseSettingsDialog({
   );
 
   const handleTopicsChange = useCallback(
-    (value: string[]) => handleInputChange('topics', value),
+    (value: string[]) => handleInputChange('topicIds', value),
     [handleInputChange],
   );
 
@@ -200,7 +200,7 @@ export function PhraseSettingsDialog({
               <Label htmlFor="topics">Topics</Label>
               <MultiSelect
                 options={topicOptions}
-                value={pendingSettings?.topics || DEFAULT_SETTINGS.topics}
+                value={pendingSettings?.topicIds || DEFAULT_SETTINGS.topicIds}
                 onValueChange={handleTopicsChange}
                 placeholder="Select topics..."
                 disabled={topicsLoading}
