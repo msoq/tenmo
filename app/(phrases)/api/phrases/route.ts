@@ -33,7 +33,7 @@ export async function GET() {
       );
     }
 
-    const phrases = await generatePhrases({
+    const phrasesText = await generatePhrases({
       from: normalizeLanguageToName(settings.fromLanguage),
       to: normalizeLanguageToName(settings.toLanguage),
       topics,
@@ -43,7 +43,13 @@ export async function GET() {
       phraseLength: settings.phraseLength,
     });
 
-    return new Response(JSON.stringify({ phrases }), {
+    // FIXME: Assign a random topicId to each phrase for feedback context
+    const phrasesWithTopics = phrasesText.map((text) => ({
+      text,
+      topicId: topics[Math.floor(Math.random() * topics.length)].id,
+    }));
+
+    return new Response(JSON.stringify({ phrases: phrasesWithTopics }), {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',

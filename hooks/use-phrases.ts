@@ -5,7 +5,6 @@ import type {
   PhraseSettings,
 } from '@/components/phrase-settings-dialog';
 import { generateUUID } from '@/lib/utils';
-import { normalizeLanguageToName } from '@/lib/utils/language-utils';
 import { useCallback } from 'react';
 import { toast } from 'sonner';
 import useSWR, { mutate } from 'swr';
@@ -23,28 +22,31 @@ async function generatePhrases(): Promise<Phrase[]> {
   const data = await response.json();
 
   // Transform API response to Phrase objects with unique IDs
-  const phrases = data.phrases.map((text: string) => ({
-    id: generateUUID(),
-    text,
-    userTranslation: '',
-    isSubmitted: false,
-    isLoading: false,
-  }));
+  const phrases = data.phrases.map(
+    (item: { text: string; topicId: string }) => ({
+      id: generateUUID(),
+      text: item.text,
+      topicId: item.topicId,
+      userTranslation: '',
+      isSubmitted: false,
+      isLoading: false,
+    }),
+  );
 
   return phrases;
 }
 
 async function submitTranslationFeedback(
   phrase: Phrase,
-  params: PhraseSettings,
 ): Promise<FeedbackResponse> {
+  if (!phrase.topicId) {
+    throw new Error('Phrase must have a topicId for feedback');
+  }
+
   const requestBody: FeedbackRequest = {
-    id: phrase.id,
-    text: phrase.text,
+    topicId: phrase.topicId,
     userTranslation: phrase.userTranslation,
-    from: normalizeLanguageToName(params.from),
-    to: normalizeLanguageToName(params.to),
-    level: params.level,
+    phraseText: phrase.text,
   };
 
   const response = await fetch('/api/phrases/feedback', {
@@ -86,34 +88,27 @@ export function usePhrases(settings: PhraseSettings | null | undefined) {
     { populateCache: true, revalidate: false },
   );
 
-  const submitFeedbackAndUpdateCache = useCallback(
-    async (phrase: Phrase) => {
-      if (!settings) {
-        throw new Error('Cannot submit feedback without language settings');
-      }
+  const submitFeedbackAndUpdateCache = useCallback(async (phrase: Phrase) => {
+    const { topicId, feedback, isCorrect, suggestions } =
+      await submitTranslationFeedback(phrase);
 
-      const { id, feedback, isCorrect, suggestions } =
-        await submitTranslationFeedback(phrase, settings);
-
-      // Update the phrases cache directly
-      mutate(PHRASES_MUTATION_KEY, (currentPhrases: Phrase[] = []) =>
-        currentPhrases.map((p) => {
-          if (p.id === id) {
-            return {
-              ...p,
-              feedback,
-              isCorrect,
-              suggestions,
-              isSubmitted: true,
-              isLoading: false,
-            };
-          }
-          return p;
-        }),
-      );
-    },
-    [settings],
-  );
+    // Update the phrases cache directly
+    mutate(PHRASES_MUTATION_KEY, (currentPhrases: Phrase[] = []) =>
+      currentPhrases.map((p) => {
+        if (p.id === phrase.id) {
+          return {
+            ...p,
+            feedback,
+            isCorrect,
+            suggestions,
+            isSubmitted: true,
+            isLoading: false,
+          };
+        }
+        return p;
+      }),
+    );
+  }, []);
 
   const getPhrases = useCallback(async () => {
     try {

@@ -42,6 +42,7 @@ export interface Phrase {
   id: string; // Unique identifier for each phrase
   text: string; // Original phrase text
   userTranslation: string; // User's translation input
+  topicId?: string; // Associated topic ID for the phrase
   feedback?: string; // AI feedback on translation
   isCorrect?: boolean; // Whether translation is correct
   isLoading?: boolean; // Loading state for individual phrase
@@ -51,17 +52,14 @@ export interface Phrase {
 
 // API request/response interfaces for feedback endpoint
 export interface FeedbackRequest {
-  id: string;
-  text: string;
+  topicId: string;
   userTranslation: string;
-  from: string;
-  to: string;
-  level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+  phraseText: string;
 }
 
 export interface FeedbackResponse {
-  id: string;
-  feedback: string;
+  topicId: string;
+  feedback?: string;
   isCorrect: boolean;
   suggestions?: string[];
 }
