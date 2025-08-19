@@ -1,16 +1,16 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import {
-  pgTable,
-  varchar,
-  timestamp,
-  json,
-  uuid,
-  text,
-  primaryKey,
-  foreignKey,
   boolean,
+  foreignKey,
   integer,
+  json,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
   uniqueIndex,
+  uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -180,29 +180,54 @@ export const userPhrasesSettings = pgTable(
       .references(() => user.id, { onDelete: 'cascade' }),
     fromLanguage: varchar('fromLanguage', { length: 10 }).notNull(),
     toLanguage: varchar('toLanguage', { length: 10 }).notNull(),
-    topic: varchar('topic', { length: 200 }).notNull(),
     count: integer('count').notNull(),
     instruction: text('instruction'),
-    level: varchar('level', { 
-      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] 
+    level: varchar('level', {
+      enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
     }).notNull(),
     phraseLength: integer('phraseLength').notNull(),
     updatedAt: timestamp('updatedAt').notNull().defaultNow(),
     createdAt: timestamp('createdAt').notNull().defaultNow(),
   },
   (table) => ({
-    userIdIndex: uniqueIndex('userPhrasesSettings_userId_unique').on(table.userId),
-  })
+    userIdIndex: uniqueIndex('userPhrasesSettings_userId_unique').on(
+      table.userId,
+    ),
+  }),
 );
 
 export type UserPhrasesSettings = InferSelectModel<typeof userPhrasesSettings>;
+
+// Enriched type with topic IDs from junction table
+export type UserPhrasesSettingsWithTopics = UserPhrasesSettings & {
+  topicIds: string[];
+};
+
+export const userPhrasesSettingsTopic = pgTable(
+  'UserPhrasesSettingsTopic',
+  {
+    settingsId: uuid('settingsId')
+      .notNull()
+      .references(() => userPhrasesSettings.id, { onDelete: 'cascade' }),
+    topicId: uuid('topicId')
+      .notNull()
+      .references(() => topics.id),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.settingsId, table.topicId] }),
+  }),
+);
+
+export type UserPhrasesSettingsTopic = InferSelectModel<
+  typeof userPhrasesSettingsTopic
+>;
 
 export const topics = pgTable('Topics', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
   title: varchar('title', { length: 200 }).notNull(),
   description: text('description').notNull(),
-  level: varchar('level', { 
-    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] 
+  level: varchar('level', {
+    enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
   }).notNull(),
   category: varchar('category', { length: 50 }).notNull(),
   difficulty: integer('difficulty').notNull(),

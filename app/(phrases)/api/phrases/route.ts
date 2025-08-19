@@ -1,6 +1,7 @@
 import { auth } from '@/app/(auth)/auth';
 import { generatePhrases } from '@/lib/ai/prompts/phrase/generate-phrases';
 import { getTopicsByIds, getUserPhrasesSettings } from '@/lib/db/queries';
+import { normalizeLanguageToName } from '@/lib/utils/language-utils';
 import { z } from 'zod';
 
 export const maxDuration = 60;
@@ -21,13 +22,7 @@ export async function GET() {
       );
     }
 
-    // Extract and validate topic IDs from settings
-    const topicIds = (settings.topic || '')
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    const topics = await getTopicsByIds({ ids: topicIds });
+    const topics = await getTopicsByIds({ ids: settings.topicIds });
     if (!topics || topics.length === 0) {
       return Response.json(
         {
@@ -39,8 +34,8 @@ export async function GET() {
     }
 
     const phrases = await generatePhrases({
-      from: settings.fromLanguage,
-      to: settings.toLanguage,
+      from: normalizeLanguageToName(settings.fromLanguage),
+      to: normalizeLanguageToName(settings.toLanguage),
       topics: topics.map((t) => t.title),
       count: settings.count,
       instruction: settings.instruction || 'None',

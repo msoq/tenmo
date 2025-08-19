@@ -1,0 +1,1 @@
+ALTER TABLE "UserPhrasesSettings" DROP COLUMN IF EXISTS "topic";

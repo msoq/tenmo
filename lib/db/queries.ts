@@ -35,6 +35,8 @@ import {
   type User,
   type UserPhrasesSettings,
   userPhrasesSettings,
+  userPhrasesSettingsTopic,
+  type UserPhrasesSettingsWithTopics,
   vote,
 } from './schema';
 import { generateHashedPassword } from './utils';
@@ -544,7 +546,7 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
 
 export async function getUserPhrasesSettings(
   userId: string,
-): Promise<UserPhrasesSettings | null> {
+): Promise<UserPhrasesSettingsWithTopics | null> {
   try {
     const settings = await db
       .select()
@@ -552,7 +554,18 @@ export async function getUserPhrasesSettings(
       .where(eq(userPhrasesSettings.userId, userId))
       .limit(1);
 
-    return settings[0] || null;
+    const base = settings[0] || null;
+    if (!base) return null;
+
+    const rows = await db
+      .select({ topicId: userPhrasesSettingsTopic.topicId })
+      .from(userPhrasesSettingsTopic)
+      .where(eq(userPhrasesSettingsTopic.settingsId, base.id));
+
+    return {
+      ...base,
+      topicIds: rows.map((r) => r.topicId),
+    };
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -572,7 +585,6 @@ export async function createUserPhrasesSettings(
         userId,
         fromLanguage: params.from,
         toLanguage: params.to,
-        topic: params.topics.join(','),
         count: params.count,
         instruction: params.instruction || null,
         level: params.level,
@@ -580,7 +592,18 @@ export async function createUserPhrasesSettings(
       })
       .returning();
 
-    return settings[0];
+    const created = settings[0];
+
+    if (params.topics && params.topics.length > 0) {
+      await db.insert(userPhrasesSettingsTopic).values(
+        params.topics.map((topicId) => ({
+          settingsId: created.id,
+          topicId,
+        })),
+      );
+    }
+
+    return created;
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -594,22 +617,40 @@ export async function updateUserPhrasesSettings(
   params: PhraseSettings,
 ): Promise<UserPhrasesSettings> {
   try {
-    const settings = await db
-      .update(userPhrasesSettings)
-      .set({
-        fromLanguage: params.from,
-        toLanguage: params.to,
-        topic: params.topics.join(','),
-        count: params.count,
-        instruction: params.instruction || null,
-        level: params.level,
-        phraseLength: params.phraseLength,
-        updatedAt: new Date(),
-      })
-      .where(eq(userPhrasesSettings.userId, userId))
-      .returning();
+    return await db.transaction(async (tx) => {
+      const settings = await tx
+        .update(userPhrasesSettings)
+        .set({
+          fromLanguage: params.from,
+          toLanguage: params.to,
+          count: params.count,
+          instruction: params.instruction || null,
+          level: params.level,
+          phraseLength: params.phraseLength,
+          updatedAt: new Date(),
+        })
+        .where(eq(userPhrasesSettings.userId, userId))
+        .returning();
 
-    return settings[0];
+      const updated = settings[0];
+
+      // Replace join-table rows with new set (dedupe topic IDs)
+      await tx
+        .delete(userPhrasesSettingsTopic)
+        .where(eq(userPhrasesSettingsTopic.settingsId, updated.id));
+
+      const uniqueTopicIds = Array.from(new Set(params.topics || []));
+      if (uniqueTopicIds.length > 0) {
+        await tx.insert(userPhrasesSettingsTopic).values(
+          uniqueTopicIds.map((topicId) => ({
+            settingsId: updated.id,
+            topicId,
+          })),
+        );
+      }
+
+      return updated;
+    });
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

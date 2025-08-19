@@ -1,17 +1,21 @@
 import { auth } from '@/app/(auth)/auth';
-import { z } from 'zod';
-import { 
-  getUserPhrasesSettings, 
-  createUserPhrasesSettings, 
-  updateUserPhrasesSettings 
+import {
+  createUserPhrasesSettings,
+  getTopicsByIds,
+  getUserPhrasesSettings,
+  updateUserPhrasesSettings,
 } from '@/lib/db/queries';
+import { z } from 'zod';
 
 export const maxDuration = 60;
 
 const phraseSettingsSchema = z.object({
   from: z.string().min(2, 'Source language code is required').max(10),
   to: z.string().min(2, 'Target language code is required').max(10),
-  topics: z.array(z.string().min(1).max(200)).min(1, 'At least one topic is required').max(5, 'Maximum 5 topics allowed'),
+  topics: z
+    .array(z.string().uuid())
+    .min(1, 'At least one topic is required')
+    .max(5, 'Maximum 5 topics allowed'),
   count: z.number().int().min(10).max(50),
   instruction: z.string().max(500).optional().default(''),
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
@@ -28,7 +32,7 @@ export async function GET() {
     }
 
     const settings = await getUserPhrasesSettings(session.user.id);
-    
+
     if (!settings) {
       return Response.json(null);
     }
@@ -37,7 +41,7 @@ export async function GET() {
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
+      topics: settings.topicIds,
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -49,7 +53,7 @@ export async function GET() {
     console.error('Error retrieving phrase settings:', error);
     return Response.json(
       { error: 'Failed to retrieve settings' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -66,22 +70,35 @@ export async function POST(request: Request) {
     const body = await request.json();
     const params = phraseSettingsSchema.parse(body);
 
+    // Validate topic IDs exist to avoid FK errors
+    const uniqueTopicIds = Array.from(new Set(params.topics));
+    const foundTopics = await getTopicsByIds({ ids: uniqueTopicIds });
+    if (foundTopics.length !== uniqueTopicIds.length) {
+      const foundIds = new Set(foundTopics.map((t) => t.id));
+      const missing = uniqueTopicIds.filter((id) => !foundIds.has(id));
+      return Response.json(
+        { error: 'Invalid topic IDs', details: missing },
+        { status: 400 },
+      );
+    }
+
     // Check if settings already exist
     const existingSettings = await getUserPhrasesSettings(session.user.id);
     if (existingSettings) {
       return Response.json(
         { error: 'Settings already exist. Use PUT to update.' },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     const settings = await createUserPhrasesSettings(session.user.id, params);
 
-    // Transform database model to API response
+    // Transform database model to API response (read back topicIds)
+    const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
+      topics: reread?.topicIds ?? [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -95,13 +112,13 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return Response.json(
         { error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return Response.json(
       { error: 'Failed to create settings' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -118,22 +135,35 @@ export async function PUT(request: Request) {
     const body = await request.json();
     const params = phraseSettingsSchema.parse(body);
 
+    // Validate topic IDs exist to avoid FK errors
+    const uniqueTopicIds = Array.from(new Set(params.topics));
+    const foundTopics = await getTopicsByIds({ ids: uniqueTopicIds });
+    if (foundTopics.length !== uniqueTopicIds.length) {
+      const foundIds = new Set(foundTopics.map((t) => t.id));
+      const missing = uniqueTopicIds.filter((id) => !foundIds.has(id));
+      return Response.json(
+        { error: 'Invalid topic IDs', details: missing },
+        { status: 400 },
+      );
+    }
+
     // Check if settings exist
     const existingSettings = await getUserPhrasesSettings(session.user.id);
     if (!existingSettings) {
       return Response.json(
         { error: 'Settings not found. Use POST to create.' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     const settings = await updateUserPhrasesSettings(session.user.id, params);
 
-    // Transform database model to API response
+    // Transform database model to API response (read back topicIds)
+    const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
       from: settings.fromLanguage,
       to: settings.toLanguage,
-      topics: settings.topic ? settings.topic.split(',').filter(t => t.trim()) : [],
+      topics: reread?.topicIds ?? [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -147,13 +177,13 @@ export async function PUT(request: Request) {
     if (error instanceof z.ZodError) {
       return Response.json(
         { error: 'Invalid parameters', details: error.errors },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return Response.json(
       { error: 'Failed to update settings' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
