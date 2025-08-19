@@ -1,25 +1,29 @@
-import { useCallback } from 'react';
-import useSWR, { mutate } from 'swr';
-import useSWRMutation from 'swr/mutation';
+import type {
+  FeedbackRequest,
+  FeedbackResponse,
+  Phrase,
+  PhraseSettings,
+} from '@/components/phrase-settings-dialog';
 import { generateUUID } from '@/lib/utils';
 import { normalizeLanguageToName } from '@/lib/utils/language-utils';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
-import type {
-  PhraseSettings,
-  Phrase,
-  FeedbackResponse,
-  FeedbackRequest,
-} from '@/components/phrase-settings-dialog';
+import useSWR, { mutate } from 'swr';
+import useSWRMutation from 'swr/mutation';
 
 const PHRASES_MUTATION_KEY = 'phrases';
 
 async function generatePhrases(params: PhraseSettings): Promise<Phrase[]> {
   // Convert language codes to names for API compatibility
   const apiParams = {
-    ...params,
     from: normalizeLanguageToName(params.from),
     to: normalizeLanguageToName(params.to),
-  };
+    topicIds: params.topics,
+    count: params.count,
+    instruction: params.instruction,
+    level: params.level,
+    phraseLength: params.phraseLength,
+  } as const;
 
   const response = await fetch('/api/phrases', {
     method: 'POST',

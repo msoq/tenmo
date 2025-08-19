@@ -1,8 +1,8 @@
 import { generateObject } from 'ai';
-import { myProvider } from '../../providers';
 import z from 'zod';
+import { myProvider } from '../../providers';
 
-export const requestBodySchema = z.object({
+export const requestBodySchema_old = z.object({
   from: z
     .string()
     .min(1, 'Source language is required')
@@ -24,11 +24,25 @@ export const requestBodySchema = z.object({
   phraseLength: z.coerce.number().int().min(1).max(20).default(5),
 });
 
+// External payload schema: accept topicIds instead of topics (titles)
+export const requestBodySchema = z.object({
+  from: z.string().min(1).max(50),
+  to: z.string().min(1).max(50),
+  topicIds: z
+    .array(z.string().uuid())
+    .min(1, 'At least one topicId is required')
+    .max(5),
+  count: z.coerce.number().int().min(1).max(50).default(10),
+  instruction: z.string().max(500).default('None'),
+  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('B1'),
+  phraseLength: z.coerce.number().int().min(1).max(20).default(5),
+});
+
 const phraseSchema = z.object({
   phrases: z.array(z.string()),
 });
 
-type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema>;
+type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema_old>;
 
 const cefrDescriptions = {
   A1: 'Beginner - basic phrases, present tense, simple vocabulary, everyday expressions',

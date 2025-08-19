@@ -1,9 +1,10 @@
 import { auth } from '@/app/(auth)/auth';
-import { z } from 'zod';
 import {
   generatePhrases,
   requestBodySchema,
 } from '@/lib/ai/prompts/phrase/generate-phrases';
+import { getTopicsByIds } from '@/lib/db/queries';
+import { z } from 'zod';
 
 export const maxDuration = 60;
 
@@ -15,10 +16,29 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
-    const params = requestBodySchema.parse(body);
+    const bodyJson = await request.json();
+    const body = requestBodySchema.parse(bodyJson);
+    const topics = await getTopicsByIds({ ids: body.topicIds });
 
-    const phrases = await generatePhrases(params);
+    if (!topics || topics.length === 0) {
+      return Response.json(
+        {
+          error: 'Invalid topicIds',
+          details: ['No topics found for provided ids'],
+        },
+        { status: 400 },
+      );
+    }
+
+    const phrases = await generatePhrases({
+      from: body.from,
+      to: body.to,
+      topics: topics.map((t) => t.title),
+      count: body.count,
+      instruction: body.instruction,
+      level: body.level,
+      phraseLength: body.phraseLength,
+    });
 
     return Response.json({ phrases });
   } catch (error) {

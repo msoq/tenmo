@@ -1,10 +1,17 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import equal from 'fast-deep-equal';
 import { Label } from '@/components/ui/label';
-import { LEVEL_OPTIONS } from '@/lib/constants';
+import { LanguageSelect } from '@/components/ui/language-select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import {
   Select,
   SelectContent,
@@ -12,20 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LanguageSelect } from '@/components/ui/language-select';
-import { MultiSelect } from '@/components/ui/multi-select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
-import { useTopics } from '@/hooks/use-topics';
 import { Slider } from '@/components/ui/slider';
+import { useTopics } from '@/hooks/use-topics';
+import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import { LEVEL_OPTIONS } from '@/lib/constants';
+import equal from 'fast-deep-equal';
+import { Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface PhraseSettings {
   from: string;
@@ -150,7 +150,7 @@ export function PhraseSettingsDialog({
 
   // Create topic options from real topics data
   const topicOptions = topics.map((topic) => ({
-    value: topic.title,
+    value: topic.id,
     label: topic.title,
   }));
 

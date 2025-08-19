@@ -15,29 +15,29 @@ import {
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-import {
-  user,
-  chat,
-  type User,
-  document,
-  type Suggestion,
-  suggestion,
-  message,
-  vote,
-  type DBMessage,
-  type Chat,
-  stream,
-  type UserPhrasesSettings,
-  userPhrasesSettings,
-  topics,
-  type Topic,
-} from './schema';
 import type { ArtifactKind } from '@/components/artifact';
-import { generateUUID } from '../utils';
-import { generateHashedPassword } from './utils';
+import type { PhraseSettings } from '@/components/phrase-settings-dialog';
 import type { VisibilityType } from '@/components/visibility-selector';
 import { ChatSDKError } from '../errors';
-import type { PhraseSettings } from '@/components/phrase-settings-dialog';
+import { generateUUID } from '../utils';
+import {
+  chat,
+  type Chat,
+  type DBMessage,
+  document,
+  message,
+  stream,
+  type Suggestion,
+  suggestion,
+  type Topic,
+  topics,
+  user,
+  type User,
+  type UserPhrasesSettings,
+  userPhrasesSettings,
+  vote,
+} from './schema';
+import { generateHashedPassword } from './utils';
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -633,25 +633,28 @@ export async function getTopics({
 } = {}): Promise<Topic[]> {
   try {
     const conditions = [];
-    
+
     if (activeOnly) {
       conditions.push(eq(topics.isActive, true));
     }
-    
+
     if (level) {
-      conditions.push(eq(topics.level, level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'));
+      conditions.push(
+        eq(topics.level, level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2'),
+      );
     }
-    
+
     if (category) {
       conditions.push(eq(topics.category, category));
     }
-    
+
     if (createdByUserId) {
       conditions.push(eq(topics.createdByUserId, createdByUserId));
     }
-    
-    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
-    
+
+    const whereCondition =
+      conditions.length > 0 ? and(...conditions) : undefined;
+
     return await db
       .select()
       .from(topics)
@@ -659,27 +662,38 @@ export async function getTopics({
       .orderBy(desc(topics.createdAt))
       .limit(limit);
   } catch (error) {
+    throw new ChatSDKError('bad_request:database', 'Failed to get topics');
+  }
+}
+
+export async function getTopicsByIds({
+  ids,
+}: { ids: string[] }): Promise<Topic[]> {
+  try {
+    if (!ids || ids.length === 0) return [];
+
+    return await db.select().from(topics).where(inArray(topics.id, ids));
+  } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
-      'Failed to get topics',
+      'Failed to get topics by ids',
     );
   }
 }
 
-export async function getTopicById({ id }: { id: string }): Promise<Topic | null> {
+export async function getTopicById({
+  id,
+}: { id: string }): Promise<Topic | null> {
   try {
     const [topic] = await db
       .select()
       .from(topics)
       .where(eq(topics.id, id))
       .limit(1);
-    
+
     return topic || null;
   } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to get topic by id',
-    );
+    throw new ChatSDKError('bad_request:database', 'Failed to get topic by id');
   }
 }
 
@@ -713,13 +727,10 @@ export async function createTopic({
         updatedAt: new Date(),
       })
       .returning();
-    
+
     return topic;
   } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to create topic',
-    );
+    throw new ChatSDKError('bad_request:database', 'Failed to create topic');
   }
 }
 
@@ -742,59 +753,54 @@ export async function updateTopic({
     const updateData: any = {
       updatedAt: new Date(),
     };
-    
+
     if (title !== undefined) updateData.title = title;
     if (description !== undefined) updateData.description = description;
-    if (level !== undefined) updateData.level = level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+    if (level !== undefined)
+      updateData.level = level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
     if (category !== undefined) updateData.category = category;
     if (difficulty !== undefined) updateData.difficulty = difficulty;
-    
+
     const [topic] = await db
       .update(topics)
       .set(updateData)
       .where(eq(topics.id, id))
       .returning();
-    
+
     return topic || null;
   } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to update topic',
-    );
+    throw new ChatSDKError('bad_request:database', 'Failed to update topic');
   }
 }
 
-export async function deleteTopic({ 
-  id, 
-  softDelete = true 
-}: { 
-  id: string; 
+export async function deleteTopic({
+  id,
+  softDelete = true,
+}: {
+  id: string;
   softDelete?: boolean;
 }): Promise<Topic | null> {
   try {
     if (softDelete) {
       const [topic] = await db
         .update(topics)
-        .set({ 
+        .set({
           isActive: false,
           updatedAt: new Date(),
         })
         .where(eq(topics.id, id))
         .returning();
-      
+
       return topic || null;
     } else {
       const [topic] = await db
         .delete(topics)
         .where(eq(topics.id, id))
         .returning();
-      
+
       return topic || null;
     }
   } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'Failed to delete topic',
-    );
+    throw new ChatSDKError('bad_request:database', 'Failed to delete topic');
   }
 }
