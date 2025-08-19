@@ -9,6 +9,7 @@ export const requestBodySchema = z.object({
   topics: z
     .array(
       z.object({
+        id: z.string().uuid(),
         title: z.string().min(1).max(200),
         description: z.string().default(''),
       }),
@@ -22,10 +23,21 @@ export const requestBodySchema = z.object({
 });
 
 const phraseSchema = z.object({
-  phrases: z.array(z.string()),
+  phrases: z.array(
+    z.object({
+      text: z.string().describe('The phrase text in the source language'),
+      topicId: z
+        .string()
+        .uuid()
+        .describe('The UUID of the topic this phrase relates to'),
+    }),
+  ),
 });
 
 type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema>;
+
+// Export the generated phrase type for use in other files
+export type GeneratedPhrase = z.infer<typeof phraseSchema>['phrases'][number];
 
 const cefrDescriptions = {
   A1: 'Beginner - basic phrases, present tense, simple vocabulary, everyday expressions',
@@ -36,7 +48,9 @@ const cefrDescriptions = {
   C2: 'Proficient - near-native complexity, subtle distinctions, advanced discourse, specialized terminology',
 } as const;
 
-const formatTopics = (topics: Pick<Topic, 'title' | 'description'>[]) => {
+const formatTopics = (
+  topics: Pick<Topic, 'id' | 'title' | 'description'>[],
+) => {
   return topics
     .map((topic) =>
       topic.description ? `${topic.title} (${topic.description})` : topic.title,
@@ -58,30 +72,46 @@ const generatePhrasesPrompt = ({
   const levelDescription = cefrDescriptions[level];
   const topicsText = formatTopics(topics);
 
+  const topicList = topics
+    .map((topic) => {
+      const description = topic.description ? ` - ${topic.description}` : '';
+      return `- ${topic.title} (ID: ${topic.id})${description}`;
+    })
+    .join('\n');
+
   return `# Language Learning Phrase Generator
 
 You are an **expert ${to} language teacher** with extensive experience in language pedagogy and curriculum development. Your specialization is creating contextually appropriate practice materials for students transitioning from ${from} to ${to}.
 
 ## Your Task
-Generate a curated list of **${count} phrases in ${from}** specifically designed for **${level} level** ${to} language learners to practice **${topicsText}**.
+Generate a curated list of **${count} phrases in ${from}** specifically designed for **${level} level** ${to} language learners. Each phrase must be associated with exactly one topic ID from the provided list.
+
+## Available Topics
+${topicList}
+
+## Distribution Guidelines
+- Generate ${count} total phrases
+- Distribute phrases naturally across all ${topics.length} topics based on their relevance and learning value
+- Ensure each topic has at least some representation
+- You may allocate more phrases to topics that offer richer learning opportunities at the ${level} level
 
 ## Language Proficiency Level: ${level}
 **Target Level**: ${levelDescription}
 
 ## Educational Guidelines
 - **CEFR Level Alignment**: All phrases must be appropriate for ${level} proficiency level
-- **Contextual Relevance**: Ensure all phrases are directly related to the topic(s): "${topicsText}"
+- **Contextual Relevance**: Ensure each phrase is directly related to its assigned topic
 - **Practical Usage**: Focus on phrases students will actually use in real conversations
 - **Cultural Appropriateness**: Consider cultural context and common usage patterns
 - **Pedagogical Value**: Each phrase should teach something meaningful about ${to} language structure at ${level} level
 
 ## Content Requirements
-- **Topic Focus**: All phrases must be relevant to the selected topic(s): "${topicsText}"
+- **Topic Association**: Each phrase must include the exact topicId from the available topics list
 - **Natural Language**: Use authentic, conversational ${from} that feels natural to native speakers
 - **Level-Appropriate Complexity**: Match the grammatical and lexical complexity to ${level} level
-- **Useful Vocabulary**: Incorporate essential vocabulary for the topic areas appropriate for ${level}
+- **Useful Vocabulary**: Incorporate essential vocabulary for each specific topic appropriate for ${level}
 - **Grammar Patterns**: Include sentence structures appropriate for ${level} learners
-- **Balanced Coverage**: Randomly distribute phrases across all topics: ${topicsText}
+- **Thoughtful Distribution**: Balance phrases across topics based on their pedagogical value and relevance
 
 ## Additional Instructions
 ${instruction !== 'None' ? `**Special Requirements**: ${instruction}` : `**Focus**: Conversational phrases appropriate for ${level} level learners`}
@@ -91,7 +121,14 @@ ${instruction !== 'None' ? `**Special Requirements**: ${instruction}` : `**Focus
 - **CEFR Compliance**: Ensure all phrases match ${level} proficiency level requirements
 - **Common Usage**: Phrases should be commonly used in real-world contexts
 - **Sentence Variety**: Include a variety of sentence types (statements, questions, expressions)
-- **Topic Coherence**: Maintain strong relevance to "${topicsText}" throughout all phrases
+- **Topic Coherence**: Each phrase must strongly relate to its assigned topic
+
+## Output Format
+Return an array of phrase objects, each containing:
+- text: The phrase in ${from}
+- topicId: The exact UUID of the topic this phrase relates to (must be one of the IDs from the Available Topics list)
+
+Important: Use the exact topic IDs provided above. Each phrase must be genuinely relevant to its assigned topic.
 
 Generate the phrases now:
 `;
@@ -104,5 +141,18 @@ export const generatePhrases = async (params: GeneratePhrasePromptParams) => {
     prompt: generatePhrasesPrompt(params),
   });
 
-  return result.object.phrases;
+  // Validate that all topicIds in the response are valid
+  const validTopicIds = new Set(params.topics.map((t) => t.id));
+  const validatedPhrases = result.object.phrases.filter((phrase) =>
+    validTopicIds.has(phrase.topicId),
+  );
+
+  // If some phrases have invalid topicIds, log a warning
+  if (validatedPhrases.length < result.object.phrases.length) {
+    console.warn(
+      `Filtered out ${result.object.phrases.length - validatedPhrases.length} phrases with invalid topicIds`,
+    );
+  }
+
+  return validatedPhrases;
 };

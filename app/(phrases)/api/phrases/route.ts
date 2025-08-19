@@ -33,23 +33,25 @@ export async function GET() {
       );
     }
 
-    const phrasesText = await generatePhrases({
+    // Pass full topic objects with IDs to the generation function
+    const topicsWithIds = topics.map((topic) => ({
+      id: topic.id,
+      title: topic.title,
+      description: topic.description || '',
+    }));
+
+    const generatedPhrases = await generatePhrases({
       from: normalizeLanguageToName(settings.fromLanguage),
       to: normalizeLanguageToName(settings.toLanguage),
-      topics,
+      topics: topicsWithIds,
       count: settings.count,
       instruction: settings.instruction || 'None',
       level: settings.level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',
       phraseLength: settings.phraseLength,
     });
 
-    // FIXME: Assign a random topicId to each phrase for feedback context
-    const phrasesWithTopics = phrasesText.map((text) => ({
-      text,
-      topicId: topics[Math.floor(Math.random() * topics.length)].id,
-    }));
-
-    return new Response(JSON.stringify({ phrases: phrasesWithTopics }), {
+    // The phrases now already include topicId from the AI generation
+    return new Response(JSON.stringify({ phrases: generatedPhrases }), {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-store',
