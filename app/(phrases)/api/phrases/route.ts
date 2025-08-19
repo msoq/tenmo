@@ -36,7 +36,7 @@ export async function GET() {
     const phrases = await generatePhrases({
       from: normalizeLanguageToName(settings.fromLanguage),
       to: normalizeLanguageToName(settings.toLanguage),
-      topics: topics.map((t) => t.title),
+      topics,
       count: settings.count,
       instruction: settings.instruction || 'None',
       level: settings.level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2',

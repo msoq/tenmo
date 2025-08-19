@@ -1,37 +1,20 @@
+import type { Topic } from '@/lib/db/schema';
 import { generateObject } from 'ai';
 import z from 'zod';
 import { myProvider } from '../../providers';
 
-export const requestBodySchema_old = z.object({
-  from: z
-    .string()
-    .min(1, 'Source language is required')
-    .max(50, 'Source language must be 50 characters or less'),
-  to: z
-    .string()
-    .min(1, 'Target language is required')
-    .max(50, 'Target language must be 50 characters or less'),
-  topics: z
-    .array(z.string().min(1).max(100))
-    .min(1, 'At least one topic is required')
-    .max(5, 'Maximum 5 topics allowed'),
-  count: z.coerce.number().int().min(1).max(50).default(10),
-  instruction: z
-    .string()
-    .max(500, 'Instruction must be 500 characters or less')
-    .default('None'),
-  level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('B1'),
-  phraseLength: z.coerce.number().int().min(1).max(20).default(5),
-});
-
-// External payload schema: accept topicIds instead of topics (titles)
 export const requestBodySchema = z.object({
   from: z.string().min(1).max(50),
   to: z.string().min(1).max(50),
-  topicIds: z
-    .array(z.string().uuid())
-    .min(1, 'At least one topicId is required')
-    .max(5),
+  topics: z
+    .array(
+      z.object({
+        title: z.string().min(1).max(200),
+        description: z.string().default(''),
+      }),
+    )
+    .min(1, 'At least one topic is required')
+    .max(5, 'Maximum 5 topics allowed'),
   count: z.coerce.number().int().min(1).max(50).default(10),
   instruction: z.string().max(500).default('None'),
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).default('B1'),
@@ -42,7 +25,7 @@ const phraseSchema = z.object({
   phrases: z.array(z.string()),
 });
 
-type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema_old>;
+type GeneratePhrasePromptParams = z.infer<typeof requestBodySchema>;
 
 const cefrDescriptions = {
   A1: 'Beginner - basic phrases, present tense, simple vocabulary, everyday expressions',
@@ -52,6 +35,14 @@ const cefrDescriptions = {
   C1: 'Advanced - sophisticated structures, idiomatic expressions, formal/informal registers, subtle meanings',
   C2: 'Proficient - near-native complexity, subtle distinctions, advanced discourse, specialized terminology',
 } as const;
+
+const formatTopics = (topics: Pick<Topic, 'title' | 'description'>[]) => {
+  return topics
+    .map((topic) =>
+      topic.description ? `${topic.title} (${topic.description})` : topic.title,
+    )
+    .join(', ');
+};
 
 const generatePhrasesPrompt = ({
   from,
@@ -65,7 +56,7 @@ const generatePhrasesPrompt = ({
   const minWords = Math.max(1, Math.round(phraseLength * 0.8));
   const maxWords = Math.round(phraseLength * 1.2);
   const levelDescription = cefrDescriptions[level];
-  const topicsText = topics.length === 1 ? topics[0] : topics.join(', ');
+  const topicsText = formatTopics(topics);
 
   return `# Language Learning Phrase Generator
 
