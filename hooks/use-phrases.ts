@@ -13,25 +13,8 @@ import useSWRMutation from 'swr/mutation';
 
 const PHRASES_MUTATION_KEY = 'phrases';
 
-async function generatePhrases(params: PhraseSettings): Promise<Phrase[]> {
-  // Convert language codes to names for API compatibility
-  const apiParams = {
-    from: normalizeLanguageToName(params.from),
-    to: normalizeLanguageToName(params.to),
-    topicIds: params.topics,
-    count: params.count,
-    instruction: params.instruction,
-    level: params.level,
-    phraseLength: params.phraseLength,
-  } as const;
-
-  const response = await fetch('/api/phrases', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(apiParams),
-  });
+async function generatePhrases(): Promise<Phrase[]> {
+  const response = await fetch('/api/phrases', { method: 'GET' });
 
   if (!response.ok) {
     throw new Error('Failed to generate phrases');
@@ -99,7 +82,7 @@ export function usePhrases(settings: PhraseSettings | null | undefined) {
     reset,
   } = useSWRMutation(
     PHRASES_MUTATION_KEY,
-    () => (settings ? generatePhrases(settings) : Promise.resolve([])),
+    () => (settings ? generatePhrases() : Promise.resolve([])),
     { populateCache: true, revalidate: false },
   );
 
