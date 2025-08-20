@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTopic } from '@/hooks/use-topic';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { Button } from '@/components/ui/button';
+import { DeleteTopicDialog } from '@/components/delete-topic-dialog';
 import { cn } from '@/lib/utils';
 import { LEVEL_COLORS, LEVEL_DESCRIPTIONS } from '@/lib/constants';
 import { createDifficultyStars } from '@/lib/topics/utils';
@@ -47,6 +48,7 @@ export default function TopicPage(props: { params: Promise<{ id: string }> }) {
             Edit Topic
           </Button>
         </Link>
+        <DeleteTopicDialog topicId={topic.id} topicTitle={topic.title} />
       </header>
 
       <main className="flex-1 overflow-y-auto p-4">
