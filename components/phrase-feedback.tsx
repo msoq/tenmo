@@ -158,9 +158,15 @@ export function PhraseFeedback({
             <p className="text-lg font-medium text-green-600">
               🎉 All phrases completed!
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Great job! Generate new phrases to continue learning.
-            </p>
+            <div className="text-sm text-muted-foreground mt-2">
+              <p>
+                {submittedPhrases.filter((p) => p.isCorrect === true).length} /{' '}
+                {submittedPhrases.length}
+              </p>
+              <p className="mt-1">
+                Great job! Generate new phrases to continue learning.
+              </p>
+            </div>
             <Button
               onClick={onGenerateNewPhrases}
               variant="outline"
