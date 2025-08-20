@@ -111,8 +111,15 @@ export function PhraseFeedback({
                             → {phrase.userTranslation}
                           </div>
                         )}
-                        {phrase.isCorrect === false && phrase.feedback && (
-                          <div className="text-xs text-red-600 mt-1">
+                        {phrase.feedback && (
+                          <div
+                            className={cn(
+                              'text-xs mt-1',
+                              phrase.isCorrect === false && 'text-red-600',
+                              phrase.isCorrect === true &&
+                                'text-muted-foreground',
+                            )}
+                          >
                             {phrase.feedback}
                           </div>
                         )}
