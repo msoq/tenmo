@@ -1,11 +1,13 @@
 'use client';
 
-import { CornerRightUp, Loader2 } from 'lucide-react';
+import { CornerRightUp, Loader2, Mic, Square } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import { Button } from './button';
+import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 interface AIInputProps {
   id?: string;
@@ -33,6 +35,20 @@ export function AIInput({
     maxHeight,
   });
   const [inputValue, setInputValue] = useState('');
+
+  // Get user language settings for transcription hint
+  const { settings } = useUserPhrasesSettings();
+
+  // Use the speech-to-text hook
+  const { isRecording, isTranscribing, toggleRecording } = useSpeechToText({
+    language: settings?.to || undefined,
+    onTranscript: (text) => {
+      setInputValue(text);
+      adjustHeight();
+      // Focus textarea after transcription
+      textareaRef.current?.focus();
+    },
+  });
 
   const handleReset = () => {
     if (!inputValue.trim()) return;
@@ -79,14 +95,29 @@ export function AIInput({
           disabled={disabled || isLoading}
         />
 
-        {/* <div
+        {/* Mic button */}
+        <Button
+          onClick={toggleRecording}
+          type="button"
+          size="xs"
+          variant="link"
           className={cn(
             'absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200',
-            inputValue ? 'right-10' : 'right-3',
+            inputValue ? 'right-10' : 'right-10',
+            isRecording && 'ring-2 ring-red-500',
           )}
+          disabled={disabled || isLoading || isTranscribing}
         >
-          <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
-        </div> */}
+          {isTranscribing ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : isRecording ? (
+            <Square className="w-3 h-3 text-red-500 fill-red-500" />
+          ) : (
+            <Mic className="w-4 h-4 text-black/70 dark:text-white/70" />
+          )}
+        </Button>
+
+        {/* Submit button */}
         <Button
           onClick={handleReset}
           type="button"
@@ -96,9 +127,7 @@ export function AIInput({
             'absolute top-1/2 -translate-y-1/2 right-3',
             'rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1',
             'transition-all duration-200',
-            inputValue
-              ? 'opacity-100 scale-100'
-              : 'opacity-0 scale-95 pointer-events-none',
+            'scale-100',
           )}
           disabled={disabled || isLoading}
         >

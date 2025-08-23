@@ -1,4 +1,4 @@
-import type { Topic } from '@/lib/db/schema';
+import { topics, type Topic } from '@/lib/db/schema';
 import { generateObject } from 'ai';
 import z from 'zod';
 import { myProvider } from '../../providers';
@@ -48,16 +48,6 @@ const cefrDescriptions = {
   C2: 'Proficient - near-native complexity, subtle distinctions, advanced discourse, specialized terminology',
 } as const;
 
-const formatTopics = (
-  topics: Pick<Topic, 'id' | 'title' | 'description'>[],
-) => {
-  return topics
-    .map((topic) =>
-      topic.description ? `${topic.title} (${topic.description})` : topic.title,
-    )
-    .join(', ');
-};
-
 const generatePhrasesPrompt = ({
   from,
   to,
@@ -70,7 +60,6 @@ const generatePhrasesPrompt = ({
   const minWords = Math.max(1, Math.round(phraseLength * 0.8));
   const maxWords = Math.round(phraseLength * 1.2);
   const levelDescription = cefrDescriptions[level];
-  const topicsText = formatTopics(topics);
 
   const topicList = topics
     .map((topic) => {
