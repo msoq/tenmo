@@ -127,8 +127,15 @@ export function PhraseSettingsDialog({
   // Check if there are unsaved changes
   const hasChanges = pendingSettings && !equal(settings, pendingSettings);
 
+  // Validation: Check if from and to languages are the same
+  const hasValidationError = !!(
+    pendingSettings?.from &&
+    pendingSettings?.to &&
+    pendingSettings.from === pendingSettings.to
+  );
+
   const handleSave = useCallback(async () => {
-    if (!pendingSettings || !hasChanges) return;
+    if (!pendingSettings || !hasChanges || hasValidationError) return;
 
     setIsSaving(true);
     try {
@@ -140,7 +147,13 @@ export function PhraseSettingsDialog({
     } finally {
       setIsSaving(false);
     }
-  }, [pendingSettings, hasChanges, saveSettings, onOpenChange]);
+  }, [
+    pendingSettings,
+    hasChanges,
+    hasValidationError,
+    saveSettings,
+    onOpenChange,
+  ]);
 
   const handleCancel = useCallback(() => {
     onOpenChange(false);
@@ -166,6 +179,7 @@ export function PhraseSettingsDialog({
                 value={pendingSettings?.from || DEFAULT_SETTINGS.from}
                 onValueChange={handleFromLanguageChange}
                 placeholder="Select source language..."
+                className={hasValidationError ? 'border-destructive' : ''}
               />
             </div>
             <div className="space-y-2">
@@ -174,6 +188,7 @@ export function PhraseSettingsDialog({
                 value={pendingSettings?.to || DEFAULT_SETTINGS.to}
                 onValueChange={handleToLanguageChange}
                 placeholder="Select target language..."
+                className={hasValidationError ? 'border-destructive' : ''}
               />
             </div>
             <div className="space-y-2">
@@ -256,7 +271,7 @@ export function PhraseSettingsDialog({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={!hasChanges || isSaving}
+            disabled={!hasChanges || isSaving || hasValidationError}
             className="min-w-[125px]"
           >
             {isSaving || !open ? (
