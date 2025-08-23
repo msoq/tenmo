@@ -1,5 +1,5 @@
 import { generateObject } from 'ai';
-import z from 'zod';
+import { z } from 'zod';
 import { aiProvider } from '../../providers';
 
 // Request schema using topicId

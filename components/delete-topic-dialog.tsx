@@ -72,7 +72,7 @@ export function DeleteTopicDialog({
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This action cannot be undone. This will permanently delete the topic
-            "{topicTitle}" and remove it from our servers.
+            &ldquo;{topicTitle}&rdquo; and remove it from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         {deleteError && (

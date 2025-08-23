@@ -1,6 +1,5 @@
-import { topics, type Topic } from '@/lib/db/schema';
 import { generateObject } from 'ai';
-import z from 'zod';
+import { z } from 'zod';
 import { aiProvider } from '../../providers';
 
 export const requestBodySchema = z.object({
