@@ -102,8 +102,7 @@ export function AIInput({
           size="xs"
           variant="link"
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 transition-all duration-200',
-            inputValue ? 'right-10' : 'right-10',
+            'absolute top-1/2 -translate-y-1/2 rounded-xl bg-black/5 dark:bg-white/5 py-1 px-1 right-10 transition-all duration-200',
             isRecording && 'ring-2 ring-red-500',
           )}
           disabled={disabled || isLoading || isTranscribing}

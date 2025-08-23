@@ -1,6 +1,6 @@
 import { generateObject } from 'ai';
 import z from 'zod';
-import { myProvider } from '../../providers';
+import { aiProvider } from '../../providers';
 
 // Request schema using topicId
 export const generateFeedbackBodySchema = z.object({
@@ -106,7 +106,7 @@ The translation should STRICTLY align with the topic context. Verify that:
 
 export const generateFeedback = async (params: GenerateFeedbackParams) => {
   const result = await generateObject({
-    model: myProvider.languageModel('chat-model'),
+    model: aiProvider.text.languageModel('chat-model'),
     schema: generateFeedbackSchema,
     prompt: generateFeedbackPrompt(params),
   });

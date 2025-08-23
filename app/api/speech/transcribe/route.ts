@@ -1,6 +1,6 @@
 import { auth } from '@/app/(auth)/auth';
 import { experimental_transcribe as transcribe } from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { aiProvider } from '@/lib/ai/providers';
 
 export const maxDuration = 60; // seconds
 
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     // Transcribe with Whisper
     const result = await transcribe({
-      model: openai.transcription('whisper-1'),
+      model: aiProvider.speech.transcriptionModel('whisper-1'),
       audio,
       providerOptions: lang
         ? {

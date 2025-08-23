@@ -3,6 +3,7 @@ import {
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from 'ai';
+import { openai } from '@ai-sdk/openai';
 import { xai } from '@ai-sdk/xai';
 import { google } from '@ai-sdk/google';
 import { anthropic } from '@ai-sdk/anthropic';
@@ -17,6 +18,11 @@ import {
 const { PROVIDER_NAME } = process.env;
 
 const providers = {
+  openai: customProvider({
+    transcriptionModels: {
+      'whisper-1': openai.transcription('whisper-1'),
+    },
+  }),
   xai: customProvider({
     languageModels: {
       'chat-model': xai('grok-2-vision-1212'),
@@ -80,4 +86,7 @@ if (!isProviderName(PROVIDER_NAME)) {
   throw new Error(`Unknown provider: ${PROVIDER_NAME}`);
 }
 
-export const myProvider = providers[PROVIDER_NAME];
+export const aiProvider = {
+  text: providers[PROVIDER_NAME],
+  speech: providers.openai,
+};

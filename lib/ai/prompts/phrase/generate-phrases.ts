@@ -1,7 +1,7 @@
 import { topics, type Topic } from '@/lib/db/schema';
 import { generateObject } from 'ai';
 import z from 'zod';
-import { myProvider } from '../../providers';
+import { aiProvider } from '../../providers';
 
 export const requestBodySchema = z.object({
   from: z.string().min(1).max(50),
@@ -125,7 +125,7 @@ Generate the phrases now:
 
 export const generatePhrases = async (params: GeneratePhrasePromptParams) => {
   const result = await generateObject({
-    model: myProvider.languageModel('chat-model'),
+    model: aiProvider.text.languageModel('chat-model'),
     schema: phraseSchema,
     prompt: generatePhrasesPrompt(params),
   });
