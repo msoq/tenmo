@@ -6,7 +6,6 @@ import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useAutoResizeTextarea } from '@/hooks/use-auto-resize-textarea';
 import { Button } from './button';
-import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 import { useSpeechToText } from '@/hooks/use-speech-to-text';
 
 interface AIInputProps {
@@ -36,12 +35,8 @@ export function AIInput({
   });
   const [inputValue, setInputValue] = useState('');
 
-  // Get user language settings for transcription hint
-  const { settings } = useUserPhrasesSettings();
-
   // Use the speech-to-text hook
   const { isRecording, isTranscribing, toggleRecording } = useSpeechToText({
-    language: settings?.to || undefined,
     onTranscript: (text) => {
       setInputValue(text);
       adjustHeight();

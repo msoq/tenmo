@@ -5,13 +5,9 @@ import { toast } from 'sonner';
 
 export interface UseSpeechToTextOptions {
   /**
-   * Language hint for transcription (ISO-639-1 code, e.g., 'en', 'es')
-   */
-  language?: string;
-  /**
    * Callback when transcription is successful
    */
-  onTranscript?: (text: string, detectedLanguage?: string) => void;
+  onTranscript?: (text: string) => void;
   /**
    * Callback when an error occurs
    */
@@ -69,7 +65,6 @@ export interface UseSpeechToTextReturn {
  * Hook for speech-to-text functionality using OpenAI Whisper
  */
 export function useSpeechToText({
-  language,
   onTranscript,
   onError,
   apiEndpoint = '/api/speech/transcribe',
@@ -89,10 +84,9 @@ export function useSpeechToText({
    * Upload audio blob to the transcription API
    */
   const uploadAudio = useCallback(
-    async (blob: Blob): Promise<{ text: string; language?: string }> => {
+    async (blob: Blob): Promise<{ text: string }> => {
       const form = new FormData();
       form.append('file', blob, 'recording.webm');
-      if (language) form.append('lang', language);
 
       const res = await fetch(apiEndpoint, {
         method: 'POST',
@@ -108,7 +102,7 @@ export function useSpeechToText({
 
       return res.json();
     },
-    [apiEndpoint, language],
+    [apiEndpoint],
   );
 
   /**
@@ -124,7 +118,7 @@ export function useSpeechToText({
 
         if (result.text) {
           setTranscript(result.text);
-          onTranscript?.(result.text, result.language);
+          onTranscript?.(result.text);
         }
       } catch (err) {
         const error =

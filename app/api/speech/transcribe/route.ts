@@ -15,7 +15,6 @@ export async function POST(request: Request) {
     // Parse form data
     const form = await request.formData();
     const file = form.get('file');
-    const lang = form.get('lang') as string | null;
 
     // Validate file
     if (!(file instanceof File)) {
@@ -41,20 +40,11 @@ export async function POST(request: Request) {
     const result = await transcribe({
       model: aiProvider.speech.transcriptionModel('whisper-1'),
       audio,
-      providerOptions: lang
-        ? {
-            openai: {
-              // Pass language hint if provided
-              language: lang,
-            },
-          }
-        : undefined,
     });
 
     return Response.json(
       {
         text: result.text,
-        language: result.language,
       },
       { status: 200 },
     );
