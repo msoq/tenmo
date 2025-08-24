@@ -9,6 +9,7 @@ import { PhraseSettingsToggle } from '@/components/phrase-settings-toggle';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { AIInput } from '@/components/ui/ai-input';
 import { usePhrases } from '@/hooks/use-phrases';
+import { useTopics } from '@/hooks/use-topics';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
 import { toast } from 'sonner';
 
@@ -21,6 +22,8 @@ export default function Page() {
     error: settingsError,
   } = useUserPhrasesSettings();
 
+  const { topics, isLoading: topicsLoading } = useTopics({ activeOnly: true });
+
   const {
     phrases,
     allCompleted,
@@ -29,14 +32,14 @@ export default function Page() {
     isLoading: phrasesLoading,
     getPhrases,
     submitTranslation,
-  } = usePhrases(settings);
+  } = usePhrases(settings, topics);
 
-  // get phrases when settings are loaded
+  // get phrases when settings and topics are loaded
   useEffect(() => {
-    if (settings && !settingsLoading) {
+    if (settings && !settingsLoading && topics.length > 0 && !topicsLoading) {
       getPhrases();
     }
-  }, [settings, settingsLoading, getPhrases]);
+  }, [settings, settingsLoading, topics, topicsLoading, getPhrases]);
 
   const handleSubmit = (userTranslation: string) => {
     const loadingPhrase = phrases.find((phrase) => phrase.isLoading);
@@ -67,19 +70,19 @@ export default function Page() {
         />
       </header>
       <main className="flex-1 overflow-hidden flex flex-col">
-        {settingsLoading && (
+        {(settingsLoading || topicsLoading) && (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center text-muted-foreground">Loading...</div>
           </div>
         )}
 
-        {!settingsLoading && settings === null && (
+        {!settingsLoading && !topicsLoading && settings === null && (
           <div className="flex-1 flex items-center justify-center">
             <PhraseInitialInstructions />
           </div>
         )}
 
-        {!settingsLoading && settings !== null && (
+        {!settingsLoading && !topicsLoading && settings !== null && (
           <>
             <div className="overflow-y-auto">
               <PhraseFeedback
@@ -100,7 +103,7 @@ export default function Page() {
         )}
       </main>
 
-      {!settingsLoading && settings !== null && (
+      {!settingsLoading && !topicsLoading && settings !== null && (
         <footer>
           <AIInput
             onSubmit={handleSubmit}
