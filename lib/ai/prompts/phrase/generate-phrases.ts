@@ -104,6 +104,24 @@ ${topicList}
 ## Additional Instructions
 ${instruction !== 'None' ? `**Special Requirements**: ${instruction}` : `**Focus**: Conversational phrases appropriate for ${level} level learners`}
 
+${
+  instruction !== 'None'
+    ? `## Instruction Adherence (MANDATORY)
+- Treat the instruction as the primary theme: "${instruction}".
+- ALL phrases (100%) must explicitly follow this instruction — no exceptions.
+- If a topic seems unrelated, craft the phrase so it clearly connects that topic to the instruction theme.
+- Make the theme observable in each phrase through concrete lexical cues (keywords, imagery, or actions) related to the instruction.
+- Self-check before returning: replace any phrase that does not clearly reflect the instruction.
+`
+    : ''
+}
+
+## Language Constraints (MANDATORY)
+- Write phrases strictly in ${from} only. Do not use any ${to} or other languages.
+- No code-switching or transliteration. Use only ${from} words and orthography/characters.
+- Do not copy foreign words from topic titles/descriptions; express concepts entirely in ${from}.
+- Proper nouns must appear in localized ${from} orthography, never left in ${to}.
+
 ## Quality Standards
 - **Phrase Length**: Each phrase should be approximately **${minWords}-${maxWords} words** (target: ${phraseLength} words ±20%)
 - **CEFR Compliance**: Ensure all phrases match ${level} proficiency level requirements
@@ -113,7 +131,7 @@ ${instruction !== 'None' ? `**Special Requirements**: ${instruction}` : `**Focus
 
 ## Output Format
 Return an array of phrase objects, each containing:
-- text: The phrase in ${from}
+- text: The phrase in ${from} (must follow the instruction and contain no foreign words)
 - topicId: The exact UUID of the topic this phrase relates to (must be one of the IDs from the Available Topics list)
 
 Important: Use the exact topic IDs provided above. Each phrase must be genuinely relevant to its assigned topic.
