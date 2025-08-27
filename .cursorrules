@@ -1,0 +1,33 @@
+# Cursor Rules – Tenmo
+
+## Always read first (every chat/task)
+- Read `memory-bank/projectbrief.md` then `memory-bank/product-context.md`.
+- Read `memory-bank/system-patterns.md` and `memory-bank/tech-context.md`.
+- Read `memory-bank/active-context.md` and `memory-bank/progress.md`.
+
+## Behavior & style
+- Keep responses concise and high-signal.
+- Prefer Tailwind's built-in animation utilities over custom CSS files for animations.
+- Use SWR for client↔server data fetching in client components; avoid ad-hoc fetch patterns.
+- Use artifacts for substantial content/code/sheets; do not update immediately after create unless the user asks.
+- Follow `ChatSDKError` pattern for API/server error handling; convert to `toResponse()`.
+- Centralize DB access via `lib/db/queries.ts`; do not write ad-hoc SQL.
+- Respect TypeScript strictness; clear naming; explicit types on exported APIs.
+
+## Development conventions
+- Stack: Next.js 15 (App Router, PPR), React 19 RC, Tailwind, Drizzle, NextAuth v5, Vercel AI SDK.
+- Auth: Guest auto-provision via middleware; regular users redirected away from `/login` & `/register`.
+- AI: Select provider via `PROVIDER_NAME`; reasoning wrapped with `extractReasoningMiddleware`.
+- Testing: Playwright bootstraps via `/ping`.
+
+## Memory Bank maintenance
+- When asked to "update memory bank":
+  1) Review ALL files in `memory-bank/`.
+  2) Document current state and changes.
+  3) Clarify next steps in `active-context.md`.
+  4) Record learnings in `progress.md`.
+
+## When uncertain
+- Consult the Memory Bank, then `spec.md`, then relevant code paths under `app/`, `lib/`, and `components/`.
+- State assumptions briefly and proceed.
+
