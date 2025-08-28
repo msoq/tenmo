@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createTopic, updateTopic } from '@/lib/db/queries';
+import { auth } from '@/app/(auth)/auth';
 import { z } from 'zod';
 
 const topicFormSchema = z.object({
@@ -27,6 +28,15 @@ const topicFormSchema = z.object({
 
 export async function createTopicAction(formData: FormData) {
   try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: 'Unauthorized',
+      };
+    }
+
     const rawData = {
       title: formData.get('title'),
       description: formData.get('description'),
@@ -43,6 +53,7 @@ export async function createTopicAction(formData: FormData) {
       level: validatedData.level,
       category: validatedData.category,
       difficulty: validatedData.difficulty,
+      createdByUserId: session.user.id,
     });
 
     revalidatePath('/topics');

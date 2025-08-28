@@ -23,7 +23,8 @@ export function TopicGrid({ className }: TopicGridProps) {
   const { topics, isLoading, error } = useTopics({ activeOnly: true });
   const [levelFilter, setLevelFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [difficultySortOrder, setDifficultySortOrder] = useState<string>('none');
+  const [difficultySortOrder, setDifficultySortOrder] =
+    useState<string>('none');
 
   const handleCreateTopic = () => {
     router.push('/topics/new');
@@ -32,10 +33,14 @@ export function TopicGrid({ className }: TopicGridProps) {
   // Get unique categories and levels for filter options
   const { uniqueCategories, uniqueLevels } = useMemo(() => {
     if (!topics) return { uniqueCategories: [], uniqueLevels: [] };
-    
-    const categories = Array.from(new Set(topics.map(topic => topic.category))).sort();
-    const levels = Array.from(new Set(topics.map(topic => topic.level))).sort();
-    
+
+    const categories = Array.from(
+      new Set(topics.map((topic) => topic.category)),
+    ).sort();
+    const levels = Array.from(
+      new Set(topics.map((topic) => topic.level)),
+    ).sort();
+
     return { uniqueCategories: categories, uniqueLevels: levels };
   }, [topics]);
 
@@ -43,9 +48,10 @@ export function TopicGrid({ className }: TopicGridProps) {
   const filteredAndSortedTopics = useMemo(() => {
     if (!topics) return [];
 
-    const filtered = topics.filter(topic => {
+    const filtered = topics.filter((topic) => {
       const levelMatch = levelFilter === 'all' || topic.level === levelFilter;
-      const categoryMatch = categoryFilter === 'all' || topic.category === categoryFilter;
+      const categoryMatch =
+        categoryFilter === 'all' || topic.category === categoryFilter;
       return levelMatch && categoryMatch;
     });
 
@@ -82,10 +88,14 @@ export function TopicGrid({ className }: TopicGridProps) {
 
   if (!topics || topics.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-sm text-muted-foreground">
-          No topics available at the moment.
+      <div className="flex flex-col items-center justify-center py-12 gap-4">
+        <p className="text-sm text-muted-foreground text-center">
+          You don’t have any topics yet.
         </p>
+        <Button onClick={handleCreateTopic}>
+          <Plus className="size-4 mr-2" />
+          Create your first topic
+        </Button>
       </div>
     );
   }
@@ -103,7 +113,7 @@ export function TopicGrid({ className }: TopicGridProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Levels</SelectItem>
-                {uniqueLevels.map(level => (
+                {uniqueLevels.map((level) => (
                   <SelectItem key={level} value={level}>
                     {level}
                   </SelectItem>
@@ -120,7 +130,7 @@ export function TopicGrid({ className }: TopicGridProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {uniqueCategories.map(category => (
+                {uniqueCategories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
                   </SelectItem>
@@ -131,7 +141,10 @@ export function TopicGrid({ className }: TopicGridProps) {
 
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Sort by Difficulty:</span>
-            <Select value={difficultySortOrder} onValueChange={setDifficultySortOrder}>
+            <Select
+              value={difficultySortOrder}
+              onValueChange={setDifficultySortOrder}
+            >
               <SelectTrigger className="w-36" aria-label="Sort by difficulty">
                 <SelectValue />
               </SelectTrigger>
@@ -165,12 +178,11 @@ export function TopicGrid({ className }: TopicGridProps) {
           </p>
         </div>
       ) : (
-        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}>
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ${className}`}
+        >
           {filteredAndSortedTopics.map((topic) => (
-            <TopicCard
-              key={topic.id}
-              topic={topic}
-            />
+            <TopicCard key={topic.id} topic={topic} />
           ))}
         </div>
       )}

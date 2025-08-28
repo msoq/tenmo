@@ -44,6 +44,8 @@ export const config = {
   matcher: [
     '/',
     '/chat/:id',
+    '/topics/:path*',
+    '/phrases/:path*',
     '/api/:path*',
     '/login',
     '/register',

@@ -5,7 +5,6 @@ export interface TopicsParams {
   limit?: number;
   level?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
   category?: string;
-  createdByUserId?: string;
   activeOnly?: boolean;
 }
 
@@ -23,9 +22,6 @@ async function fetchTopics(params: TopicsParams = {}): Promise<Topic[]> {
   }
   if (params.category) {
     searchParams.append('category', params.category);
-  }
-  if (params.createdByUserId) {
-    searchParams.append('createdByUserId', params.createdByUserId);
   }
   if (params.activeOnly !== undefined) {
     searchParams.append('activeOnly', params.activeOnly.toString());
