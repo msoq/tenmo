@@ -232,6 +232,8 @@ export const topics = pgTable('Topics', {
   category: varchar('category', { length: 50 }).notNull(),
   difficulty: integer('difficulty').notNull(),
   createdByUserId: uuid('createdByUserId').references(() => user.id),
+  fromLanguage: varchar('fromLanguage', { length: 10 }).notNull(),
+  toLanguage: varchar('toLanguage', { length: 10 }).notNull(),
   isActive: boolean('isActive').notNull().default(true),
   createdAt: timestamp('createdAt').notNull().defaultNow(),
   updatedAt: timestamp('updatedAt').notNull().defaultNow(),

@@ -24,6 +24,8 @@ const topicFormSchema = z.object({
     .int()
     .min(1, 'Difficulty must be at least 1')
     .max(5, 'Difficulty must be at most 5'),
+  fromLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+  toLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
 });
 
 export async function createTopicAction(formData: FormData) {
@@ -43,6 +45,8 @@ export async function createTopicAction(formData: FormData) {
       level: formData.get('level'),
       category: formData.get('category'),
       difficulty: Number(formData.get('difficulty')),
+      fromLanguage: formData.get('fromLanguage'),
+      toLanguage: formData.get('toLanguage'),
     };
 
     const validatedData = topicFormSchema.parse(rawData);
@@ -54,6 +58,8 @@ export async function createTopicAction(formData: FormData) {
       category: validatedData.category,
       difficulty: validatedData.difficulty,
       createdByUserId: session.user.id,
+      fromLanguage: validatedData.fromLanguage,
+      toLanguage: validatedData.toLanguage,
     });
 
     revalidatePath('/topics');
@@ -84,6 +90,8 @@ export async function updateTopicAction(id: string, formData: FormData) {
       level: formData.get('level'),
       category: formData.get('category'),
       difficulty: Number(formData.get('difficulty')),
+      fromLanguage: formData.get('fromLanguage'),
+      toLanguage: formData.get('toLanguage'),
     };
 
     const validatedData = topicFormSchema.parse(rawData);
@@ -95,6 +103,8 @@ export async function updateTopicAction(id: string, formData: FormData) {
       level: validatedData.level,
       category: validatedData.category,
       difficulty: validatedData.difficulty,
+      fromLanguage: validatedData.fromLanguage,
+      toLanguage: validatedData.toLanguage,
     });
 
     if (!updatedTopic) {

@@ -665,12 +665,16 @@ export async function getTopics({
   category,
   createdByUserId,
   activeOnly = true,
+  fromLanguage,
+  toLanguage,
 }: {
   limit?: number;
   level?: string;
   category?: string;
   createdByUserId?: string;
   activeOnly?: boolean;
+  fromLanguage?: string;
+  toLanguage?: string;
 } = {}): Promise<Topic[]> {
   try {
     const conditions = [];
@@ -691,6 +695,14 @@ export async function getTopics({
 
     if (createdByUserId) {
       conditions.push(eq(topics.createdByUserId, createdByUserId));
+    }
+
+    if (fromLanguage) {
+      conditions.push(eq(topics.fromLanguage, fromLanguage));
+    }
+
+    if (toLanguage) {
+      conditions.push(eq(topics.toLanguage, toLanguage));
     }
 
     const whereCondition =
@@ -745,6 +757,8 @@ export async function createTopic({
   category,
   difficulty,
   createdByUserId,
+  fromLanguage,
+  toLanguage,
 }: {
   title: string;
   description: string;
@@ -752,6 +766,8 @@ export async function createTopic({
   category: string;
   difficulty: number;
   createdByUserId?: string;
+  fromLanguage: string;
+  toLanguage: string;
 }): Promise<Topic> {
   try {
     const [topic] = await db
@@ -763,6 +779,8 @@ export async function createTopic({
         category,
         difficulty,
         createdByUserId: createdByUserId || null,
+        fromLanguage,
+        toLanguage,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -782,6 +800,8 @@ export async function updateTopic({
   level,
   category,
   difficulty,
+  fromLanguage,
+  toLanguage,
 }: {
   id: string;
   title?: string;
@@ -789,6 +809,8 @@ export async function updateTopic({
   level?: string;
   category?: string;
   difficulty?: number;
+  fromLanguage?: string;
+  toLanguage?: string;
 }): Promise<Topic | null> {
   try {
     const updateData: any = {
@@ -801,6 +823,8 @@ export async function updateTopic({
       updateData.level = level as 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
     if (category !== undefined) updateData.category = category;
     if (difficulty !== undefined) updateData.difficulty = difficulty;
+    if (fromLanguage !== undefined) updateData.fromLanguage = fromLanguage;
+    if (toLanguage !== undefined) updateData.toLanguage = toLanguage;
 
     const [topic] = await db
       .update(topics)

@@ -6,6 +6,8 @@ export interface TopicsParams {
   level?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
   category?: string;
   activeOnly?: boolean;
+  fromLanguage?: string;
+  toLanguage?: string;
 }
 
 const TOPICS_MUTATION_KEY = 'topics';
@@ -26,6 +28,12 @@ async function fetchTopics(params: TopicsParams = {}): Promise<Topic[]> {
   if (params.activeOnly !== undefined) {
     searchParams.append('activeOnly', params.activeOnly.toString());
   }
+  if (params.fromLanguage) {
+    searchParams.append('from', params.fromLanguage);
+  }
+  if (params.toLanguage) {
+    searchParams.append('to', params.toLanguage);
+  }
 
   const url = `/api/topics${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
@@ -38,15 +46,15 @@ async function fetchTopics(params: TopicsParams = {}): Promise<Topic[]> {
   return response.json();
 }
 
-export function useTopics(params: TopicsParams = {}) {
-  const key = [TOPICS_MUTATION_KEY, params];
+export function useTopics(params: TopicsParams | null = {}) {
+  const key = params ? [TOPICS_MUTATION_KEY, params] : null;
 
   const {
     data: topics = [],
     error,
     isLoading,
     mutate,
-  } = useSWR(key, () => fetchTopics(params), {
+  } = useSWR(key, params ? () => fetchTopics(params) : null, {
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 5000, // Avoid duplicate requests for 5 seconds

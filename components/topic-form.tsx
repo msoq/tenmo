@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { mutate } from 'swr';
 import type { Topic } from '@/lib/db/schema';
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { LanguageSelect } from '@/components/ui/language-select';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -26,6 +27,8 @@ interface TopicFormData {
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
   category: string;
   difficulty: number;
+  fromLanguage: string;
+  toLanguage: string;
 }
 
 interface TopicFormProps {
@@ -43,9 +46,31 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
     level: topic?.level || 'A1',
     category: topic?.category || '',
     difficulty: topic?.difficulty || 3,
+    fromLanguage: topic?.fromLanguage || '',
+    toLanguage: topic?.toLanguage || '',
   });
   const [isPending, setIsPending] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]> | null>(null);
+
+  // Initialize languages with browser detection for new topics
+  useEffect(() => {
+    if (mode === 'create' && !topic) {
+      const browserLang = navigator.language.split('-')[0].toLowerCase();
+      if (/^[a-z]{2}$/.test(browserLang)) {
+        setFormData((prev) => ({
+          ...prev,
+          fromLanguage: prev.fromLanguage || browserLang,
+          toLanguage: prev.toLanguage || (browserLang === 'en' ? 'es' : 'en'),
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          fromLanguage: prev.fromLanguage || 'en',
+          toLanguage: prev.toLanguage || 'es',
+        }));
+      }
+    }
+  }, [mode, topic]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +83,8 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
     formDataToSubmit.append('level', formData.level);
     formDataToSubmit.append('category', formData.category);
     formDataToSubmit.append('difficulty', formData.difficulty.toString());
+    formDataToSubmit.append('fromLanguage', formData.fromLanguage);
+    formDataToSubmit.append('toLanguage', formData.toLanguage);
 
     try {
       const result = await action(formDataToSubmit);
@@ -103,6 +130,37 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Language selection */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="fromLanguage">From Language</Label>
+          <LanguageSelect
+            value={formData.fromLanguage}
+            onValueChange={(value) =>
+              setFormData({ ...formData, fromLanguage: value })
+            }
+            placeholder="Select source language"
+          />
+          {errors?.fromLanguage && (
+            <p className="text-sm text-destructive">{errors.fromLanguage[0]}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="toLanguage">To Language</Label>
+          <LanguageSelect
+            value={formData.toLanguage}
+            onValueChange={(value) =>
+              setFormData({ ...formData, toLanguage: value })
+            }
+            placeholder="Select target language"
+          />
+          {errors?.toLanguage && (
+            <p className="text-sm text-destructive">{errors.toLanguage[0]}</p>
+          )}
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>

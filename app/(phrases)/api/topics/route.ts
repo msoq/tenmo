@@ -10,6 +10,8 @@ const createTopicSchema = z.object({
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
   category: z.string().min(1, 'Category is required').max(50),
   difficulty: z.number().int().min(1).max(5),
+  fromLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+  toLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
 });
 
 const getTopicsSchema = z.object({
@@ -17,6 +19,14 @@ const getTopicsSchema = z.object({
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']).optional(),
   category: z.string().max(50).optional(),
   activeOnly: z.coerce.boolean().default(true),
+  from: z
+    .string()
+    .regex(/^[a-z]{2}$/)
+    .optional(),
+  to: z
+    .string()
+    .regex(/^[a-z]{2}$/)
+    .optional(),
 });
 
 // GET - Retrieve topics with optional filtering
@@ -35,6 +45,8 @@ export async function GET(request: Request) {
     const topics = await getTopics({
       ...params,
       createdByUserId: session.user.id,
+      fromLanguage: params.from,
+      toLanguage: params.to,
     });
 
     return Response.json(topics);

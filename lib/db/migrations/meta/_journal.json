@@ -78,6 +78,13 @@
       "when": 1755611370539,
       "tag": "0010_special_vision",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1756838113495,
+      "tag": "0011_classy_sage",
+      "breakpoints": true
     }
   ]
 }
