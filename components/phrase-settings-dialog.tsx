@@ -178,7 +178,7 @@ export function PhraseSettingsDialog({
               <LanguageSelect
                 value={pendingSettings?.from || DEFAULT_SETTINGS.from}
                 onValueChange={handleFromLanguageChange}
-                placeholder="Select source language..."
+                placeholder="Select"
                 className={hasValidationError ? 'border-destructive' : ''}
               />
             </div>
@@ -187,7 +187,7 @@ export function PhraseSettingsDialog({
               <LanguageSelect
                 value={pendingSettings?.to || DEFAULT_SETTINGS.to}
                 onValueChange={handleToLanguageChange}
-                placeholder="Select target language..."
+                placeholder="Select"
                 className={hasValidationError ? 'border-destructive' : ''}
               />
             </div>

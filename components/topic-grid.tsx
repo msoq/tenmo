@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTopics } from '@/hooks/use-topics';
 import { TopicCard } from '@/components/topic-card';
@@ -15,45 +15,23 @@ interface TopicGridProps {
 export function TopicGrid({ className }: TopicGridProps) {
   const router = useRouter();
 
-  // Language filtering with browser detection
-  const [languagesInitialized, setLanguagesInitialized] = useState(false);
+  // Language filtering
   const [fromLanguage, setFromLanguage] = useState<string>('');
   const [toLanguage, setToLanguage] = useState<string>('');
 
-  // Initialize languages on mount with browser detection
-  useEffect(() => {
-    // Get browser language (e.g., 'en-US' -> 'en')
-    const browserLang = navigator.language.split('-')[0].toLowerCase();
-
-    // Set from language to browser language if it's a valid 2-letter code
-    if (/^[a-z]{2}$/.test(browserLang)) {
-      setFromLanguage(browserLang);
-      // Set common learning pair
-      setToLanguage(browserLang === 'en' ? 'es' : 'en');
-    } else {
-      // Fallback to English -> Spanish
-      setFromLanguage('en');
-      setToLanguage('es');
-    }
-    setLanguagesInitialized(true);
-  }, []);
-
-  // Only fetch topics after languages are initialized
   const { topics, isLoading, error } = useTopics(
-    languagesInitialized
+    fromLanguage && toLanguage
       ? {
           activeOnly: true,
-          fromLanguage: fromLanguage || undefined,
-          toLanguage: toLanguage || undefined,
+          fromLanguage,
+          toLanguage,
         }
-      : null, // Don't fetch until languages are set
+      : null,
   );
 
   const handleCreateTopic = () => {
     router.push('/topics/new');
   };
-
-  // No filtering needed - just use topics directly
 
   return (
     <>
@@ -74,7 +52,7 @@ export function TopicGrid({ className }: TopicGridProps) {
             value={fromLanguage}
             onValueChange={setFromLanguage}
             className="w-48"
-            placeholder="Select source language"
+            placeholder="Select"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -83,10 +61,20 @@ export function TopicGrid({ className }: TopicGridProps) {
             value={toLanguage}
             onValueChange={setToLanguage}
             className="w-48"
-            placeholder="Select target language"
+            placeholder="Select"
           />
         </div>
       </div>
+
+      {/* Language selection message */}
+      {(!fromLanguage || !toLanguage) && (
+        <div className="mb-4 p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Choose your source and target languages to explore available topics
+            and create personalized learning content.
+          </p>
+        </div>
+      )}
 
       {/* Topics Content Area */}
       {isLoading ? (

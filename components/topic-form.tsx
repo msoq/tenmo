@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { mutate } from 'swr';
 import type { Topic } from '@/lib/db/schema';
@@ -51,26 +51,6 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
   });
   const [isPending, setIsPending] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]> | null>(null);
-
-  // Initialize languages with browser detection for new topics
-  useEffect(() => {
-    if (mode === 'create' && !topic) {
-      const browserLang = navigator.language.split('-')[0].toLowerCase();
-      if (/^[a-z]{2}$/.test(browserLang)) {
-        setFormData((prev) => ({
-          ...prev,
-          fromLanguage: prev.fromLanguage || browserLang,
-          toLanguage: prev.toLanguage || (browserLang === 'en' ? 'es' : 'en'),
-        }));
-      } else {
-        setFormData((prev) => ({
-          ...prev,
-          fromLanguage: prev.fromLanguage || 'en',
-          toLanguage: prev.toLanguage || 'es',
-        }));
-      }
-    }
-  }, [mode, topic]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,13 +133,23 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
             onValueChange={(value) =>
               setFormData({ ...formData, toLanguage: value })
             }
-            placeholder="Select target language"
+            placeholder="Select"
           />
           {errors?.toLanguage && (
             <p className="text-sm text-destructive">{errors.toLanguage[0]}</p>
           )}
         </div>
       </div>
+
+      {/* Language selection message */}
+      {(!formData.fromLanguage || !formData.toLanguage) && (
+        <div className="p-4 bg-muted rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Select your source and target languages to create personalized
+            learning content.
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
