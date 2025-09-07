@@ -21,11 +21,8 @@ Language learners need a fast, low-friction way to practice targeted phrases and
 ### UX goals
 - Fast, predictable, minimal UI overhead.
 - Accessible components (Radix) and consistent styling (Tailwind).
-- Artifacts for longer content; avoid noisy updates without user intent.
 
 ### Metrics (directional)
 - Retention across sessions.
 - Messages/phrases per day per user.
 - Feedback acceptance/iteration rates.
-
-
