@@ -26,6 +26,7 @@ async function updatePrefs(
     body: JSON.stringify(arg),
   });
   if (!res.ok) {
+    console.error('Failed to update preferences', res);
     const error = await res.text();
     throw new Error(error || 'Failed to update preferences');
   }

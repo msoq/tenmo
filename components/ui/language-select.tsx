@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, memo } from 'react';
+import { memo } from 'react';
 import ISO6391 from 'iso-639-1';
 import {
   Select,
@@ -43,16 +43,10 @@ const PureLanguageSelect = ({
   disabled = false,
   className,
 }: LanguageSelectProps) => {
-  const text = useMemo(() => {
-    if (!value) return undefined;
-
-    return ALL_LANGUAGES.find((lang) => lang.code === value)?.text;
-  }, [value]);
-
   return (
     <Select value={value} onValueChange={onValueChange} disabled={disabled}>
       <SelectTrigger className={className}>
-        <SelectValue placeholder={placeholder}>{text}</SelectValue>
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="max-h-80" position="popper" sideOffset={4}>
         {ALL_LANGUAGES.map((language) => (

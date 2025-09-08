@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -10,20 +11,32 @@ import {
 } from '@/components/ui/card';
 import { SidebarToggle } from '@/components/sidebar-toggle';
 import { LanguageSelect } from '@/components/ui/language-select';
-import { useUserPreferences } from '@/hooks/use-user-preferences';
+import {
+  useUserPreferences,
+  type UserPreferencesDTO,
+} from '@/hooks/use-user-preferences';
 
 export const Greeting = () => {
   const { prefs, setActiveLanguagePair } = useUserPreferences();
+  const [languageDraft, setLanguageDraft] = useState<UserPreferencesDTO>({
+    from: '',
+    to: '',
+  });
 
-  const from = prefs?.from || '';
-  const to = prefs?.to || '';
+  useEffect(() => {
+    setLanguageDraft({ from: prefs?.from || '', to: prefs?.to || '' });
+  }, [prefs]);
 
-  const handleFromChange = async (value: string) => {
-    await setActiveLanguagePair({ from: value, to: to || value });
-  };
+  const handleLanguageChange = async (key: 'from' | 'to', value: string) => {
+    setLanguageDraft((prev) => {
+      const next = { ...prev, [key]: value };
 
-  const handleToChange = async (value: string) => {
-    await setActiveLanguagePair({ from: from || value, to: value });
+      if (next.from && next.to) {
+        setActiveLanguagePair(next);
+      }
+
+      return next;
+    });
   };
 
   return (
@@ -40,16 +53,16 @@ export const Greeting = () => {
           <div className="space-y-1">
             <div className="text-sm font-medium">From</div>
             <LanguageSelect
-              value={from}
-              onValueChange={handleFromChange}
+              value={languageDraft.from}
+              onValueChange={(v) => handleLanguageChange('from', v)}
               placeholder="Select"
             />
           </div>
           <div className="space-y-1">
             <div className="text-sm font-medium">To</div>
             <LanguageSelect
-              value={to}
-              onValueChange={handleToChange}
+              value={languageDraft.to}
+              onValueChange={(v) => handleLanguageChange('to', v)}
               placeholder="Select"
             />
           </div>
