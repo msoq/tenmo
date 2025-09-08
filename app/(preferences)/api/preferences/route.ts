@@ -24,6 +24,7 @@ export async function GET() {
       to: prefs.activeToLanguage,
     });
   } catch (error) {
+    console.error('Failed to get preferences', error);
     return Response.json(
       { error: 'Failed to get preferences' },
       { status: 500 },
@@ -52,6 +53,7 @@ export async function PUT(request: Request) {
       to: saved.activeToLanguage,
     });
   } catch (error) {
+    console.error('Failed to update preferences', error);
     if (error instanceof z.ZodError) {
       return Response.json(
         { error: 'Invalid parameters', details: error.errors },
