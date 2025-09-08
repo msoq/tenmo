@@ -57,15 +57,14 @@ const providers = {
       'title-model': anthropic('claude-3-5-haiku-latest'),
     },
   }),
-  // Not available yet
   openrouter: customProvider({
     languageModels: {
-      'chat-model': openrouter('google/gemini-2.0-flash-001'),
+      'chat-model': openrouter('google/gemini-2.5-flash'),
       'chat-model-reasoning': wrapLanguageModel({
-        model: openrouter('google/gemini-2.0-flash-001'),
+        model: openrouter('google/gemini-2.5-flash'),
         middleware: extractReasoningMiddleware({ tagName: 'think' }),
       }),
-      'title-model': openrouter('google/gemini-2.0-flash-001'),
+      'title-model': openrouter('google/gemini-2.5-flash'),
     },
   }),
   test: customProvider({
