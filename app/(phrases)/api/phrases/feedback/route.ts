@@ -30,23 +30,20 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Topic not found' }, { status: 404 });
     }
 
-    // Fetch user's phrase settings
+    // Languages are provided by the client; only fetch level from settings
     const userSettings = await getUserPhrasesSettings(session.user.id);
 
-    if (!userSettings) {
-      return Response.json(
-        { error: 'User phrase settings not configured' },
-        { status: 400 },
-      );
-    }
+    const effectiveFrom = validatedBody.from;
+    const effectiveTo = validatedBody.to;
+    const effectiveLevel = userSettings?.level || 'A1';
 
     // Prepare params for AI feedback generation
     const feedbackParams: GenerateFeedbackParams = {
       phraseText: validatedBody.phraseText,
       userTranslation: validatedBody.userTranslation,
-      from: normalizeLanguageToName(userSettings.fromLanguage),
-      to: normalizeLanguageToName(userSettings.toLanguage),
-      level: userSettings.level,
+      from: normalizeLanguageToName(effectiveFrom),
+      to: normalizeLanguageToName(effectiveTo),
+      level: effectiveLevel,
       topic: {
         title: topic.title,
         description: topic.description,

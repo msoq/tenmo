@@ -33,6 +33,8 @@ import {
   topics,
   user,
   type User,
+  userPreferences,
+  type UserPreferences,
   type UserPhrasesSettings,
   userPhrasesSettings,
   userPhrasesSettingsTopic,
@@ -48,6 +50,9 @@ import { generateHashedPassword } from './utils';
 // biome-ignore lint: Forbidden non-null assertion.
 const client = postgres(process.env.POSTGRES_URL!);
 const db = drizzle(client);
+
+// Settings persisted for phrases exclude languages, which come from client preferences
+export type DBPhraseSettings = Omit<PhraseSettings, 'from' | 'to'>;
 
 export async function getUser(email: string): Promise<Array<User>> {
   try {
@@ -544,6 +549,62 @@ export async function getStreamIdsByChatId({ chatId }: { chatId: string }) {
   }
 }
 
+export async function getUserPreferences(
+  userId: string,
+): Promise<UserPreferences | null> {
+  try {
+    const [row] = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1);
+    return row || null;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to get user preferences',
+    );
+  }
+}
+
+export async function setActiveLanguagePair({
+  userId,
+  from,
+  to,
+}: {
+  userId: string;
+  from: string;
+  to: string;
+}): Promise<UserPreferences> {
+  try {
+    const [row] = await db
+      .insert(userPreferences)
+      .values({
+        userId,
+        activeFromLanguage: from,
+        activeToLanguage: to,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: userPreferences.userId,
+        set: {
+          activeFromLanguage: from,
+          activeToLanguage: to,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+
+    return row;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'Failed to set active language pair',
+    );
+  }
+}
+
 export async function getUserPhrasesSettings(
   userId: string,
 ): Promise<UserPhrasesSettingsWithTopics | null> {
@@ -576,15 +637,17 @@ export async function getUserPhrasesSettings(
 
 export async function createUserPhrasesSettings(
   userId: string,
-  params: PhraseSettings,
+  params: DBPhraseSettings,
+  fromLanguage: string,
+  toLanguage: string,
 ): Promise<UserPhrasesSettings> {
   try {
     const settings = await db
       .insert(userPhrasesSettings)
       .values({
         userId,
-        fromLanguage: params.from,
-        toLanguage: params.to,
+        fromLanguage,
+        toLanguage,
         count: params.count,
         instruction: params.instruction || null,
         level: params.level,
@@ -614,15 +677,17 @@ export async function createUserPhrasesSettings(
 
 export async function updateUserPhrasesSettings(
   userId: string,
-  params: PhraseSettings,
+  params: DBPhraseSettings,
+  fromLanguage: string,
+  toLanguage: string,
 ): Promise<UserPhrasesSettings> {
   try {
     return await db.transaction(async (tx) => {
       const settings = await tx
         .update(userPhrasesSettings)
         .set({
-          fromLanguage: params.from,
-          toLanguage: params.to,
+          fromLanguage,
+          toLanguage,
           count: params.count,
           instruction: params.instruction || null,
           level: params.level,

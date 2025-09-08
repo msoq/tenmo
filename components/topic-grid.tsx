@@ -1,12 +1,10 @@
 'use client';
-
-import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTopics } from '@/hooks/use-topics';
 import { TopicCard } from '@/components/topic-card';
 import { Button } from '@/components/ui/button';
-import { LanguageSelect } from '@/components/ui/language-select';
 import { Loader2, Plus } from 'lucide-react';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 interface TopicGridProps {
   className?: string;
@@ -15,16 +13,15 @@ interface TopicGridProps {
 export function TopicGrid({ className }: TopicGridProps) {
   const router = useRouter();
 
-  // Language filtering
-  const [fromLanguage, setFromLanguage] = useState<string>('');
-  const [toLanguage, setToLanguage] = useState<string>('');
+  // Read language pair from preferences
+  const { prefs } = useUserPreferences();
 
   const { topics, isLoading, error } = useTopics(
-    fromLanguage && toLanguage
+    prefs?.from && prefs?.to
       ? {
           activeOnly: true,
-          fromLanguage,
-          toLanguage,
+          fromLanguage: prefs.from,
+          toLanguage: prefs.to,
         }
       : null,
   );
@@ -44,34 +41,12 @@ export function TopicGrid({ className }: TopicGridProps) {
         </Button>
       </div>
 
-      {/* Language selectors */}
-      <div className="mb-4 flex flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">From:</span>
-          <LanguageSelect
-            value={fromLanguage}
-            onValueChange={setFromLanguage}
-            className="w-48"
-            placeholder="Select"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">To:</span>
-          <LanguageSelect
-            value={toLanguage}
-            onValueChange={setToLanguage}
-            className="w-48"
-            placeholder="Select"
-          />
-        </div>
-      </div>
-
       {/* Language selection message */}
-      {(!fromLanguage || !toLanguage) && (
+      {(!prefs || !prefs.from || !prefs.to) && (
         <div className="mb-4 p-4 bg-muted rounded-lg">
           <p className="text-sm text-muted-foreground">
-            Choose your source and target languages to explore available topics
-            and create personalized learning content.
+            Set your source and target languages on the Home page to explore
+            available topics and create personalized learning content.
           </p>
         </div>
       )}

@@ -16,10 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { LanguageSelect } from '@/components/ui/language-select';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 
 interface TopicFormData {
   title: string;
@@ -27,8 +27,6 @@ interface TopicFormData {
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
   category: string;
   difficulty: number;
-  fromLanguage: string;
-  toLanguage: string;
 }
 
 interface TopicFormProps {
@@ -40,14 +38,14 @@ interface TopicFormProps {
 
 export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
   const router = useRouter();
+  const { prefs } = useUserPreferences();
+
   const [formData, setFormData] = useState<TopicFormData>({
     title: topic?.title || '',
     description: topic?.description || '',
     level: topic?.level || 'A1',
     category: topic?.category || '',
     difficulty: topic?.difficulty || 3,
-    fromLanguage: topic?.fromLanguage || '',
-    toLanguage: topic?.toLanguage || '',
   });
   const [isPending, setIsPending] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]> | null>(null);
@@ -57,14 +55,20 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
     setIsPending(true);
     setErrors(null);
 
+    if (!prefs?.from || !prefs?.to) {
+      toast.error('Set your language pair on the Home page first');
+      setIsPending(false);
+      return;
+    }
+
     const formDataToSubmit = new FormData();
     formDataToSubmit.append('title', formData.title);
     formDataToSubmit.append('description', formData.description);
     formDataToSubmit.append('level', formData.level);
     formDataToSubmit.append('category', formData.category);
     formDataToSubmit.append('difficulty', formData.difficulty.toString());
-    formDataToSubmit.append('fromLanguage', formData.fromLanguage);
-    formDataToSubmit.append('toLanguage', formData.toLanguage);
+    formDataToSubmit.append('from', prefs.from);
+    formDataToSubmit.append('to', prefs.to);
 
     try {
       const result = await action(formDataToSubmit);
@@ -110,47 +114,6 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Language selection */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <Label htmlFor="fromLanguage">From Language</Label>
-          <LanguageSelect
-            value={formData.fromLanguage}
-            onValueChange={(value) =>
-              setFormData({ ...formData, fromLanguage: value })
-            }
-            placeholder="Select source language"
-          />
-          {errors?.fromLanguage && (
-            <p className="text-sm text-destructive">{errors.fromLanguage[0]}</p>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="toLanguage">To Language</Label>
-          <LanguageSelect
-            value={formData.toLanguage}
-            onValueChange={(value) =>
-              setFormData({ ...formData, toLanguage: value })
-            }
-            placeholder="Select"
-          />
-          {errors?.toLanguage && (
-            <p className="text-sm text-destructive">{errors.toLanguage[0]}</p>
-          )}
-        </div>
-      </div>
-
-      {/* Language selection message */}
-      {(!formData.fromLanguage || !formData.toLanguage) && (
-        <div className="p-4 bg-muted rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            Select your source and target languages to create personalized
-            learning content.
-          </p>
-        </div>
-      )}
-
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="title">Title</Label>

@@ -13,6 +13,8 @@ export const generateFeedbackBodySchema = z.object({
     .string()
     .min(1, 'Phrase text is required')
     .max(200, 'Phrase text must be 200 characters or less'),
+  from: z.string().min(2).max(10),
+  to: z.string().min(2).max(10),
 });
 
 const generateFeedbackSchema = z.object({

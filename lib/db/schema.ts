@@ -171,6 +171,18 @@ export const stream = pgTable(
 
 export type Stream = InferSelectModel<typeof stream>;
 
+export const userPreferences = pgTable('UserPreferences', {
+  userId: uuid('userId')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  activeFromLanguage: varchar('activeFromLanguage', { length: 10 }).notNull(),
+  activeToLanguage: varchar('activeToLanguage', { length: 10 }).notNull(),
+  createdAt: timestamp('createdAt').notNull().defaultNow(),
+  updatedAt: timestamp('updatedAt').notNull().defaultNow(),
+});
+
+export type UserPreferences = InferSelectModel<typeof userPreferences>;
+
 export const userPhrasesSettings = pgTable(
   'UserPhrasesSettings',
   {

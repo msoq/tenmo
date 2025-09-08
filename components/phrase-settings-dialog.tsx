@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { LanguageSelect } from '@/components/ui/language-select';
 import { MultiSelect } from '@/components/ui/multi-select';
 import {
   Select,
@@ -22,6 +21,7 @@ import {
 import { Slider } from '@/components/ui/slider';
 import { useTopics } from '@/hooks/use-topics';
 import { useUserPhrasesSettings } from '@/hooks/use-user-phrases-settings';
+import { useUserPreferences } from '@/hooks/use-user-preferences';
 import { LEVEL_OPTIONS } from '@/lib/constants';
 import equal from 'fast-deep-equal';
 import { Loader2 } from 'lucide-react';
@@ -55,6 +55,8 @@ export interface FeedbackRequest {
   topicId: string;
   userTranslation: string;
   phraseText: string;
+  from: string;
+  to: string;
 }
 
 export interface FeedbackResponse {
@@ -86,6 +88,7 @@ export function PhraseSettingsDialog({
 }: PhraseSettingsDialogProps) {
   const { settings, saveSettings, isLoading } = useUserPhrasesSettings();
   const { topics, isLoading: topicsLoading } = useTopics({ activeOnly: true });
+  const { prefs } = useUserPreferences();
   const [pendingSettings, setPendingSettings] = useState<PhraseSettings | null>(
     null,
   );
@@ -101,28 +104,22 @@ export function PhraseSettingsDialog({
     [],
   );
 
-  const handleFromLanguageChange = useCallback(
-    (value: string) => handleInputChange('from', value),
-    [handleInputChange],
-  );
-
-  const handleToLanguageChange = useCallback(
-    (value: string) => handleInputChange('to', value),
-    [handleInputChange],
-  );
-
   const handleTopicsChange = useCallback(
     (value: string[]) => handleInputChange('topicIds', value),
     [handleInputChange],
   );
 
-  // Initialize settings when dialog opens
+  // Initialize settings when dialog opens (languages sourced from preferences)
   useEffect(() => {
     if (open && !isLoading) {
       const currentSettings = settings || DEFAULT_SETTINGS;
-      setPendingSettings(currentSettings);
+      setPendingSettings({
+        ...currentSettings,
+        from: prefs?.from || currentSettings.from || '',
+        to: prefs?.to || currentSettings.to || '',
+      });
     }
-  }, [open, settings, isLoading]);
+  }, [open, settings, isLoading, prefs]);
 
   // Check if there are unsaved changes
   const hasChanges = pendingSettings && !equal(settings, pendingSettings);
@@ -173,24 +170,6 @@ export function PhraseSettingsDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="from">Translate From</Label>
-              <LanguageSelect
-                value={pendingSettings?.from || DEFAULT_SETTINGS.from}
-                onValueChange={handleFromLanguageChange}
-                placeholder="Select"
-                className={hasValidationError ? 'border-destructive' : ''}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="to">Translate To</Label>
-              <LanguageSelect
-                value={pendingSettings?.to || DEFAULT_SETTINGS.to}
-                onValueChange={handleToLanguageChange}
-                placeholder="Select"
-                className={hasValidationError ? 'border-destructive' : ''}
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="level">Level</Label>
               <Select

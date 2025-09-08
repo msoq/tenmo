@@ -24,8 +24,8 @@ const topicFormSchema = z.object({
     .int()
     .min(1, 'Difficulty must be at least 1')
     .max(5, 'Difficulty must be at most 5'),
-  fromLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
-  toLanguage: z.string().regex(/^[a-z]{2}$/, 'Invalid language code'),
+  from: z.string().min(2).max(10),
+  to: z.string().min(2).max(10),
 });
 
 export async function createTopicAction(formData: FormData) {
@@ -45,8 +45,8 @@ export async function createTopicAction(formData: FormData) {
       level: formData.get('level'),
       category: formData.get('category'),
       difficulty: Number(formData.get('difficulty')),
-      fromLanguage: formData.get('fromLanguage'),
-      toLanguage: formData.get('toLanguage'),
+      from: formData.get('from'),
+      to: formData.get('to'),
     };
 
     const validatedData = topicFormSchema.parse(rawData);
@@ -58,8 +58,8 @@ export async function createTopicAction(formData: FormData) {
       category: validatedData.category,
       difficulty: validatedData.difficulty,
       createdByUserId: session.user.id,
-      fromLanguage: validatedData.fromLanguage,
-      toLanguage: validatedData.toLanguage,
+      fromLanguage: validatedData.from,
+      toLanguage: validatedData.to,
     });
 
     revalidatePath('/topics');
@@ -90,8 +90,8 @@ export async function updateTopicAction(id: string, formData: FormData) {
       level: formData.get('level'),
       category: formData.get('category'),
       difficulty: Number(formData.get('difficulty')),
-      fromLanguage: formData.get('fromLanguage'),
-      toLanguage: formData.get('toLanguage'),
+      from: formData.get('from'),
+      to: formData.get('to'),
     };
 
     const validatedData = topicFormSchema.parse(rawData);
@@ -103,8 +103,8 @@ export async function updateTopicAction(id: string, formData: FormData) {
       level: validatedData.level,
       category: validatedData.category,
       difficulty: validatedData.difficulty,
-      fromLanguage: validatedData.fromLanguage,
-      toLanguage: validatedData.toLanguage,
+      fromLanguage: validatedData.from,
+      toLanguage: validatedData.to,
     });
 
     if (!updatedTopic) {

@@ -1,5 +1,6 @@
 import { auth } from '@/app/(auth)/auth';
-import type { PhraseSettings } from '@/components/phrase-settings-dialog';
+// phrase settings types come from dialog, but only DBPhraseSettings is used server-side
+import type { DBPhraseSettings } from '@/lib/db/queries';
 import {
   createUserPhrasesSettings,
   getTopicsByIds,
@@ -11,8 +12,6 @@ import { z } from 'zod';
 export const maxDuration = 60;
 
 const phraseSettingsSchema = z.object({
-  from: z.string().min(2, 'Source language code is required').max(10),
-  to: z.string().min(2, 'Target language code is required').max(10),
   topicIds: z
     .array(z.string().uuid())
     .min(1, 'At least one topic is required')
@@ -41,8 +40,6 @@ export async function GET() {
 
     // Transform database model to API response
     const response = {
-      from: settings.fromLanguage,
-      to: settings.toLanguage,
       topicIds: settings.topicIds,
       count: settings.count,
       instruction: settings.instruction || '',
@@ -94,24 +91,24 @@ export async function POST(request: Request) {
     }
 
     // Pass normalized params with topicIds for database operation
-    const dbParams: PhraseSettings = {
-      from: params.from,
-      to: params.to,
-      topicIds: params.topicIds, // Database functions now use topicIds
+    const dbParams: DBPhraseSettings = {
+      topicIds: params.topicIds,
       count: params.count,
       instruction: params.instruction || '',
       level: params.level,
       phraseLength: params.phraseLength,
     };
-    const settings = await createUserPhrasesSettings(session.user.id, dbParams);
+    const settings = await createUserPhrasesSettings(
+      session.user.id,
+      dbParams,
+      body.from,
+      body.to,
+    );
 
     // Transform database model to API response (read back topicIds)
     const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
-      from: settings.fromLanguage,
-      to: settings.toLanguage,
-      topicIds: reread?.topicIds ?? [], // Use new field name
-      topics: reread?.topicIds ?? [], // Keep for backward compatibility
+      topicIds: reread?.topicIds ?? [],
       count: settings.count,
       instruction: settings.instruction || '',
       level: settings.level,
@@ -170,22 +167,23 @@ export async function PUT(request: Request) {
     }
 
     // Pass normalized params with topicIds for database operation
-    const dbParams: PhraseSettings = {
-      from: params.from,
-      to: params.to,
+    const dbParams: DBPhraseSettings = {
       topicIds: params.topicIds,
       count: params.count,
       instruction: params.instruction || '',
       level: params.level,
       phraseLength: params.phraseLength,
     };
-    const settings = await updateUserPhrasesSettings(session.user.id, dbParams);
+    const settings = await updateUserPhrasesSettings(
+      session.user.id,
+      dbParams,
+      body.from,
+      body.to,
+    );
 
     // Transform database model to API response (read back topicIds)
     const reread = await getUserPhrasesSettings(session.user.id);
     const response = {
-      from: settings.fromLanguage,
-      to: settings.toLanguage,
       topicIds: reread?.topicIds ?? [],
       count: settings.count,
       instruction: settings.instruction || '',

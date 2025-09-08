@@ -11,14 +11,24 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 import useSWR, { mutate } from 'swr';
 import useSWRMutation from 'swr/mutation';
+import { useUserPreferences } from './use-user-preferences';
 
 const PHRASES_MUTATION_KEY = 'phrases';
 
 async function generatePhrasesMutation(
   url: string,
-  { arg }: { arg: { settings: PhraseSettings; topics: Topic[] } },
+  {
+    arg,
+  }: {
+    arg: {
+      settings: PhraseSettings;
+      topics: Topic[];
+      from: string;
+      to: string;
+    };
+  },
 ): Promise<Phrase[]> {
-  const { settings, topics } = arg;
+  const { settings, topics, from, to } = arg;
 
   // Filter topics to only include the ones selected in settings
   const selectedTopics = topics
@@ -35,8 +45,8 @@ async function generatePhrasesMutation(
 
   // Prepare request body with all necessary data
   const requestBody = {
-    from: normalizeLanguageToName(settings.from),
-    to: normalizeLanguageToName(settings.to),
+    from: normalizeLanguageToName(from),
+    to: normalizeLanguageToName(to),
     topics: selectedTopics,
     count: settings.count,
     instruction: settings.instruction || 'None',
@@ -77,9 +87,9 @@ async function generatePhrasesMutation(
 // SWR mutation function for submitting feedback
 async function submitFeedbackMutation(
   url: string,
-  { arg }: { arg: { phrase: Phrase } },
+  { arg }: { arg: { phrase: Phrase; from: string; to: string } },
 ): Promise<FeedbackResponse> {
-  const { phrase } = arg;
+  const { phrase, from, to } = arg;
 
   if (!phrase.topicId) {
     throw new Error('Phrase must have a topicId for feedback');
@@ -89,6 +99,8 @@ async function submitFeedbackMutation(
     topicId: phrase.topicId,
     userTranslation: phrase.userTranslation,
     phraseText: phrase.text,
+    from,
+    to,
   };
 
   const response = await fetch(url, {
@@ -118,6 +130,7 @@ export function usePhrases(
   settings: PhraseSettings | null | undefined,
   topics: Topic[],
 ) {
+  const { prefs } = useUserPreferences();
   const { data: phrases = [], error } = useSWR<Phrase[]>(PHRASES_MUTATION_KEY);
   const submittedPhrases = phrases.filter((phrase) => phrase.isSubmitted);
   const allCompleted =
@@ -147,16 +160,35 @@ export function usePhrases(
     if (!settings) {
       throw new Error('Settings are required to generate phrases');
     }
+    if (!prefs?.from || !prefs?.to) {
+      throw new Error('Language pair is required to generate phrases');
+    }
 
     // Clear existing phrases and trigger generation
     mutate(PHRASES_MUTATION_KEY, [], false);
     resetGenerate();
 
-    return await triggerGenerate({ settings, topics });
-  }, [settings, topics, triggerGenerate, resetGenerate]);
+    return await triggerGenerate({
+      settings,
+      topics,
+      from: prefs.from,
+      to: prefs.to,
+    });
+  }, [
+    settings,
+    topics,
+    prefs?.from,
+    prefs?.to,
+    triggerGenerate,
+    resetGenerate,
+  ]);
 
   const submitTranslation = useCallback(
     async (phrase: Phrase, userTranslation: string) => {
+      if (!prefs?.from || !prefs?.to) {
+        toast.error('Language pair is required to get feedback');
+        return;
+      }
       // Update loading state and user translation
       mutate(
         PHRASES_MUTATION_KEY,
@@ -171,6 +203,8 @@ export function usePhrases(
         // Submit feedback
         const feedbackData = await triggerFeedback({
           phrase: { ...phrase, userTranslation },
+          from: prefs.from,
+          to: prefs.to,
         });
 
         // Update the phrases cache with feedback data
@@ -203,7 +237,7 @@ export function usePhrases(
         );
       }
     },
-    [triggerFeedback],
+    [triggerFeedback, prefs?.from, prefs?.to],
   );
 
   return {
