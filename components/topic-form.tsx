@@ -79,12 +79,6 @@ export function TopicForm({ mode, topic, action, onSuccess }: TopicFormProps) {
           toast.error(result.error || 'Failed to save topic');
         }
       } else if (result?.success) {
-        toast.success(
-          mode === 'create'
-            ? 'Topic created successfully!'
-            : 'Topic updated successfully!',
-        );
-
         // Invalidate SWR cache for the topic
         await mutate(`/api/topics/${result.topicId}`);
 

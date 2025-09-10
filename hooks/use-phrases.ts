@@ -153,8 +153,10 @@ export function usePhrases(
     },
   });
 
-  const { trigger: triggerFeedback, isMutating: isSubmittingFeedback } =
-    useSWRMutation('/api/phrases/feedback', submitFeedbackMutation);
+  const { trigger: triggerFeedback } = useSWRMutation(
+    '/api/phrases/feedback',
+    submitFeedbackMutation,
+  );
 
   const getPhrases = useCallback(async () => {
     if (!settings) {
@@ -245,7 +247,7 @@ export function usePhrases(
     submittedPhrases,
     allCompleted,
     error,
-    isLoading: isGenerating || isSubmittingFeedback,
+    isLoading: isGenerating,
     getPhrases,
     submitTranslation,
   };
